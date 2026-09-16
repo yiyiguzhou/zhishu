@@ -8,6 +8,7 @@ backend/media/*
 web/node_modules/
 web/dist/
 web/*.local
+web/tsconfig.tsbuildinfo
 
 # --- os/editor ---
 .DS_Store
