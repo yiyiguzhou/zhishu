@@ -1,0 +1,30 @@
+<view wx:if="{{detail}}" class="page">
+  <!-- 左上方：作者 + 收藏（右侧） -->
+  <view class="author-bar">
+    <view class="author-left">
+      <image class="avatar" src="{{detail.authorAvatar}}" mode="aspectFill" />
+      <view>
+        <view class="author-name">{{detail.authorName}}</view>
+        <view class="author-fav">{{detail.favoriteCount || 0}} 人收藏</view>
+      </view>
+    </view>
+    <view class="fav-btn {{detail.favorited?'fav-active':''}}" bindtap="toggleFavorite">
+      {{detail.favorited ? '♥ 已收藏' : '♡ 收藏'}}
+    </view>
+  </view>
+
+  <!-- 下方：视频播放器 -->
+  <video
+    class="player"
+    src="{{playerUrl}}"
+    poster="{{detail.cover}}"
+    controls
+    enable-play-gesture="{{true}}"
+    auto-pause-if-navigate
+  ></video>
+
+  <view class="card title-block">
+    <view class="detail-title">{{detail.title}}</view>
+    <view class="detail-meta">{{detail.categoryKey}} · {{detail.durationText}}</view>
+  </view>
+</view>

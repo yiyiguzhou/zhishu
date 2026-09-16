@@ -1,0 +1,11 @@
+# 生产：MySQL。启动前先执行 db/schema.sql（或交由后续 Flyway 管理）
+spring:
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/zhishu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+  sql:
+    init:
+      mode: never    # 生产不自动初始化，schema 由迁移脚本管理
+      encoding: UTF-8

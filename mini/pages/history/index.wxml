@@ -1,0 +1,14 @@
+<view class="page">
+  <view wx:if="{{!loading && list.length === 0}}" class="empty">暂无浏览历史</view>
+  <view class="card" wx:for="{{list}}" wx:key="id" data-item="{{item}}" bindtap="goDetail">
+    <image class="cover" src="{{item.cover || 'https://placehold.co/160x100'}}" mode="aspectFill" />
+    <view class="info">
+      <view class="text-ellipsis title">{{item.title}}</view>
+      <view class="meta">{{item.targetType}} · {{item.timeText}}</view>
+      <view wx:if="{{item.targetType === 'video'}}">
+        <progress percent="{{item.watchedProgress || 0}}" stroke-width="4" activeColor="#1677ff" />
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+</view>

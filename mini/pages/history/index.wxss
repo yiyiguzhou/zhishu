@@ -1,0 +1,8 @@
+.page { padding: 20rpx; }
+.empty { text-align: center; color: #999; padding: 60rpx 0; }
+.card { display: flex; align-items: center; }
+.cover { width: 160rpx; height: 100rpx; border-radius: 8rpx; background: #eee; flex-shrink: 0; }
+.info { flex: 1; margin-left: 20rpx; overflow: hidden; }
+.title { font-size: 28rpx; }
+.meta { font-size: 22rpx; color: #999; margin: 8rpx 0; }
+progress { width: 100%; }

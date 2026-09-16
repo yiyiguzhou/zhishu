@@ -1,0 +1,33 @@
+<view class="page">
+  <!-- 未登录 -->
+  <view wx:if="{{!authed}}" class="card center">
+    <view class="hello">你好，未登录用户</view>
+    <button class="btn primary" style="margin-top:30rpx" bindtap="goLogin">登录 / 注册</button>
+  </view>
+
+  <!-- 已登录：账号信息 -->
+  <view wx:else>
+    <view class="card profile">
+      <image class="avatar" src="{{user.avatar || 'https://placehold.co/120'}}" mode="aspectFill" />
+      <view class="p-right">
+        <view class="p-name">{{user.nickname}}</view>
+        <view class="p-meta">手机号：{{user.phone || '微信登录用户'}}</view>
+        <view class="p-meta">账号ID：{{user.id}}</view>
+      </view>
+    </view>
+
+    <!-- 浏览历史 / 收藏 入口 -->
+    <view class="card">
+      <view class="entry" bindtap="goHistory">
+        <view class="entry-left"><text class="entry-icon">🕘</text> 浏览历史</view>
+        <view class="entry-arrow">历史列表 →</view>
+      </view>
+      <view class="entry" bindtap="goFavorites">
+        <view class="entry-left"><text class="entry-icon">❤️</text> 我的收藏</view>
+        <view class="entry-arrow">→</view>
+      </view>
+    </view>
+
+    <button class="btn ghost" bindtap="logout">退出登录</button>
+  </view>
+</view>

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# 暂存区感知的 pre-commit 钩子：只在改动了对应端的代码时才跑检查，
+# 纯文档/资源改动不拦截。安装：bash scripts/install-hooks.sh
+set -euo pipefail
+ROOT="$(git rev-parse --show-toplevel)"
+STAGED="$(git diff --cached --name-only --diff-filter=ACM)"
+
+if echo "$STAGED" | grep -qE '^backend/.*\.java$'; then
+  echo "[pre-commit] 检测到后端 Java 变更，执行 mvn compile ..."
+  JAVA_HOME="$(/usr/libexec/java_home -v 17)" mvn -q -f "$ROOT/backend/pom.xml" -DskipTests compile
+fi
+
+if echo "$STAGED" | grep -qE '^web/src/.*\.(ts|tsx)$'; then
+  echo "[pre-commit] 检测到 Web TS 变更，执行 tsc -b ..."
+  (cd "$ROOT/web" && npx tsc -b)
+fi
+
+if echo "$STAGED" | grep -qE '^mini/.*\.js$'; then
+  echo "[pre-commit] 检测到小程序 JS 变更，执行 node --check ..."
+  echo "$STAGED" | grep -E '^mini/.*\.js$' | while read -r f; do
+    node --check "$ROOT/$f"
+  done
+fi

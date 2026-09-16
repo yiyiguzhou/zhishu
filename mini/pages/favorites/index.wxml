@@ -1,0 +1,11 @@
+<view class="page">
+  <view wx:if="{{!loading && list.length === 0}}" class="empty">还没有收藏内容</view>
+  <view class="card" wx:for="{{list}}" wx:key="id" data-item="{{item}}" bindtap="goDetail">
+    <image class="cover" src="{{item.cover || 'https://placehold.co/160x100'}}" mode="aspectFill" />
+    <view class="info">
+      <view class="text-ellipsis title">{{item.title}}</view>
+      <view class="meta">❤️ 已收藏</view>
+    </view>
+  </view>
+  <view wx:if="{{loading}}" class="empty">加载中...</view>
+</view>

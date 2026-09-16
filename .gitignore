@@ -1,0 +1,19 @@
+# --- backend ---
+backend/target/
+backend/media/*
+!backend/media/.gitkeep
+*.class
+
+# --- web ---
+web/node_modules/
+web/dist/
+web/*.local
+
+# --- os/editor ---
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# --- runtime ---
+/tmp/

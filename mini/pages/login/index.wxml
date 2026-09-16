@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="card">
+    <view class="title">手机号登录 / 注册</view>
+    <view class="hint">未注册的手机号验证通过后将自动注册</view>
+
+    <input class="input" placeholder="手机号" type="number" maxlength="11"
+           value="{{phone}}" bindinput="onPhone" />
+    <view class="code-row">
+      <input class="input code-input" placeholder="验证码" value="{{code}}" bindinput="onCode" />
+      <button class="btn ghost" size="mini" bindtap="sendCode">获取验证码</button>
+    </view>
+
+    <view wx:if="{{hint}}" class="hint">{{hint}}</view>
+    <button class="btn primary" loading="{{loading}}" disabled="{{loading}}" bindtap="phoneLogin">登录 / 注册</button>
+
+    <view class="divider">或</view>
+    <button class="btn wechat" loading="{{loading}}" disabled="{{loading}}" bindtap="wechatLogin">微信一键登录</button>
+  </view>
+</view>

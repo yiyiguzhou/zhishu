@@ -1,0 +1,47 @@
+<view class="page">
+  <!-- 热点模块 -->
+  <view class="card">
+    <view class="section-title">🔥 热点视频</view>
+    <scroll-view scroll-x class="hot-scroll" show-scrollbar="false">
+      <view class="hot-card" wx:for="{{hotVideos}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
+        <image class="hot-cover" src="{{item.cover}}" mode="aspectFill" />
+        <view class="text-ellipsis hot-title">{{item.title}}</view>
+        <view class="hot-author">{{item.authorName}}</view>
+      </view>
+    </scroll-view>
+
+    <view class="section-title" style="margin-top:20rpx">📄 热点文章</view>
+    <view wx:for="{{hotArticles}}" wx:key="id" class="article-row">
+      <text class="text-ellipsis article-title">{{item.title}}</text>
+      <text class="article-author">{{item.authorName}}</text>
+    </view>
+  </view>
+
+  <!-- 分类模块 -->
+  <view class="card">
+    <view class="toggle">
+      <view class="toggle-item {{tag==='tech'?'active':''}}" data-tag="tech" bindtap="switchTag">按技术</view>
+      <view class="toggle-item {{tag==='blogger'?'active':''}}" data-tag="blogger" bindtap="switchTag">按博主</view>
+    </view>
+
+    <!-- 技术分类 chips -->
+    <scroll-view wx:if="{{tag==='tech'}}" scroll-x class="chip-scroll" show-scrollbar="false">
+      <view class="chip" wx:for="{{techCategories}}" wx:key="id" data-key="{{item.catKey}}" bindtap="onSelectCategory">{{item.name}}</view>
+    </scroll-view>
+    <!-- 博主 chips -->
+    <scroll-view wx:else scroll-x class="chip-scroll" show-scrollbar="false">
+      <view class="chip" wx:for="{{bloggers}}" wx:key="id" data-id="{{item.id}}" bindtap="onSelectBlogger">{{item.name}}</view>
+    </scroll-view>
+
+    <!-- 视频列表 -->
+    <view wx:for="{{list}}" wx:key="id" class="video-row" data-id="{{item.id}}" bindtap="goDetail">
+      <image class="video-cover" src="{{item.cover}}" mode="aspectFill" />
+      <view class="video-info">
+        <view class="text-ellipsis video-title">{{item.title}}</view>
+        <view class="video-meta">{{item.authorName}} · {{item.durationText}}</view>
+      </view>
+      <view class="video-play">▶</view>
+    </view>
+    <view wx:if="{{loading}}" class="loading">加载中...</view>
+  </view>
+</view>

@@ -1,0 +1,25 @@
+.page { padding: 20rpx; }
+.section-title { font-size: 30rpx; font-weight: 600; margin-bottom: 16rpx; }
+.hot-scroll { white-space: nowrap; }
+.hot-card { display: inline-block; width: 260rpx; margin-right: 20rpx; vertical-align: top; }
+.hot-cover { width: 260rpx; height: 150rpx; border-radius: 10rpx; background: #eee; }
+.hot-title { font-size: 26rpx; margin-top: 8rpx; width: 260rpx; }
+.hot-author { font-size: 22rpx; color: #999; margin-top: 4rpx; }
+.article-row { display: flex; justify-content: space-between; padding: 12rpx 0; border-bottom: 1rpx solid #f0f0f0; }
+.article-title { flex: 1; font-size: 26rpx; }
+.article-author { color: #999; font-size: 24rpx; margin-left: 16rpx; }
+
+.toggle { display: flex; background: #f2f3f5; border-radius: 12rpx; margin-bottom: 20rpx; }
+.toggle-item { flex: 1; text-align: center; padding: 12rpx 0; border-radius: 12rpx; font-size: 28rpx; }
+.toggle-item.active { background: #1677ff; color: #fff; }
+
+.chip-scroll { white-space: nowrap; margin-bottom: 20rpx; }
+.chip { display: inline-block; padding: 10rpx 28rpx; background: #f2f3f5; border-radius: 30rpx; font-size: 26rpx; margin-right: 16rpx; }
+
+.video-row { display: flex; align-items: center; padding: 16rpx 0; border-bottom: 1rpx solid #f0f0f0; }
+.video-cover { width: 180rpx; height: 110rpx; border-radius: 8rpx; background: #eee; flex-shrink: 0; }
+.video-info { flex: 1; margin-left: 20rpx; overflow: hidden; }
+.video-title { font-size: 28rpx; }
+.video-meta { font-size: 24rpx; color: #999; margin-top: 8rpx; }
+.video-play { color: #1677ff; font-size: 36rpx; padding: 0 10rpx; }
+.loading { text-align: center; color: #999; padding: 20rpx; }
