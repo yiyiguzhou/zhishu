@@ -7,7 +7,7 @@
 
 ```
 zhishu/
-├── backend/   Spring Boot(Java 17) + MyBatis-Plus + H2/MySQL + JWT + MinIO 抽象
+├── backend/   Spring Boot(Java 17) + Spring Cloud Alibaba Nacos + MyBatis-Plus + H2/MySQL + JWT + MinIO 抽象
 ├── web/       React 18 + TypeScript + Vite + Ant Design + Zustand
 └── mini/      原生微信小程序（WXML + JS）
 ```
@@ -18,6 +18,20 @@ zhishu/
   接入 NAS / Jellyfin / Plex 直链只需新增一个 Resolver。
 - **两种分类共用 category 表**：按技术(`video_tech`，harness/mcp/rag…) 或按博主(`blogger`)。
 - **认证**：小程序微信快速登录(`wx.login`→openid)；Web 手机号+验证码（开发期占位码 `123456`）。
+
+## Nacos 服务架构
+
+后端已接入 **Nacos 2.x（服务注册发现 + 配置中心）**，开发环境 Nacos 在局域网 `192.168.1.38`（Docker 单机版，与仓库内 [deploy/nacos/docker-compose.yml](deploy/nacos/docker-compose.yml) 一致）。
+
+- **控制台**：http://192.168.1.38:8848/nacos ，初始账号 `nacos/nacos`（尽快改密）
+- **注册发现**：服务名 `zhishu-backend`，分组 `ZHISHU_GROUP`，实例带本机 IP+8080 注册；后续新增服务（如搜索/推荐）直接注册即可互相发现
+- **配置中心**：group 同为 `ZHISHU_GROUP`，应用监听两个 dataId（均可选，没有也能启动）：
+  - `zhishu-backend.yaml`：所有 profile 共用的动态配置，已发布示例（在线调日志级别）
+  - `zhishu-backend-<profile>.yaml`：profile 专属配置
+  - 在控制台改完保存，约 10 秒自动推送到应用，**不用重启**（已验证：远程改日志级别即时生效）
+- **连别的 Nacos** 或本机自建：设置环境变量即可，不建议把地址写死，支持覆盖：
+  `NACOS_SERVER_ADDR`（如 `127.0.0.1:8848`）、`NACOS_USERNAME`、`NACOS_PASSWORD`
+- Nacos 暂时连不上不阻断后端启动（`fail-fast=false`，恢复后自动重连并重新注册）
 
 ## 运行
 

@@ -1,0 +1,20 @@
+# Nacos 单机版（与 192.168.1.38 上的开发环境一致）
+# 用法：docker compose -f deploy/nacos/docker-compose.yml up -d
+# 控制台：http://localhost:8848/nacos  初始账号 nacos/nacos（首次登录请改密码）
+services:
+  nacos:
+    image: nacos/nacos-server:v2.5.4
+    container_name: zhishu-nacos
+    environment:
+      - MODE=standalone
+      - NACOS_AUTH_ENABLE=true
+      # Token 必须是 Base64 编码且解码后 >=32 字节；生产环境务必重新生成
+      - NACOS_AUTH_TOKEN=Wmhpc2h1TmFjb3NFYXN0aW5vY2tzVG9rZW5rMDBwYXJ0eQ==
+      - NACOS_AUTH_IDENTITY_KEY=zhishu
+      - NACOS_AUTH_IDENTITY_VALUE=zhishu-nacos-internal
+      - JVM_XMS=256m
+      - JVM_XMX=512m
+    ports:
+      - "8848:8848"   # HTTP API / 控制台
+      - "9848:9848"   # 客户端 gRPC（= 主端口+1000，客户端连接必需）
+    restart: unless-stopped
