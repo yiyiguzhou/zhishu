@@ -6,7 +6,7 @@
 
 AI 学习内容的视频平台，三端结构（详见 README.md）：
 
-- `backend/` Spring Boot 3 (Java 17) + MyBatis-Plus + H2(开发默认，内存库，重启数据重置)/MySQL + JWT；种子数据在 `backend/src/main/resources/db/{schema,data}.sql`
+- `backend/` Spring Boot 3 (Java 17) + Spring Cloud Alibaba（Nacos 注册发现/配置中心）+ MyBatis-Plus + H2(开发默认，内存库，重启数据重置)/MySQL + JWT；种子数据在 `backend/src/main/resources/db/{schema,data}.sql`。Nacos 开发环境在局域网 `192.168.1.38:8848`（账号 nacos/nacos，分组 `ZHISHU_GROUP`），不可用时不阻断启动；本机自建 Nacos 用 `deploy/nacos/docker-compose.yml`
 - `web/` React 18 + TypeScript + Vite + Ant Design + Zustand
 - `mini/` 原生微信小程序（WXML + JS），无构建步骤，只能在微信开发者工具中验证
 

@@ -1,7 +1,27 @@
 # 大模型学习平台 - 后端配置
 spring:
+  application:
+    name: zhishu-backend
   profiles:
     active: h2          # 默认使用 H2 内存库，开箱即跑；生产切到 mysql
+  # Nacos 注册发现 + 配置中心（地址/账号支持环境变量覆盖；config.import 用 optional，
+  # Nacos 不可用时应用仍能本地启动，仅注册/远程配置失效）
+  cloud:
+    nacos:
+      server-addr: ${NACOS_SERVER_ADDR:192.168.1.38:8848}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:nacos}
+      discovery:
+        group: ZHISHU_GROUP
+        # Nacos 不可用时不阻断应用启动，连接恢复后客户端会自动重新注册
+        fail-fast: false
+      config:
+        group: ZHISHU_GROUP
+        file-extension: yaml
+  config:
+    import:
+      - optional:nacos:zhishu-backend.yaml
+      - optional:nacos:zhishu-backend-${spring.profiles.active}.yaml
 
 # 业务自定义配置
 zhishu:
