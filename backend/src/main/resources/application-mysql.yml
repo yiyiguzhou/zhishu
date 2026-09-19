@@ -1,11 +1,12 @@
-# 生产：MySQL。启动前先执行 db/schema.sql（或交由后续 Flyway 管理）
+# MySQL 环境（默认开发库在 192.168.1.38，与 Nacos 同机）。
+# 库/表由 scripts/init-mysql.sh 初始化（schema.sql + data.sql），之后不自动建表。
 spring:
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/zhishu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+    url: ${MYSQL_URL:jdbc:mysql://192.168.1.38:3306/zhishu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USER:root}
     password: ${MYSQL_PASSWORD:root}
   sql:
     init:
-      mode: never    # 生产不自动初始化，schema 由迁移脚本管理
+      mode: never    # schema 由 scripts/init-mysql.sh（后续 Flyway）管理，重启不重复灌数据
       encoding: UTF-8

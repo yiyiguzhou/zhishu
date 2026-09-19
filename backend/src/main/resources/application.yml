@@ -3,7 +3,7 @@ spring:
   application:
     name: zhishu-backend
   profiles:
-    active: h2          # 默认使用 H2 内存库，开箱即跑；生产切到 mysql
+    active: mysql       # 默认连 192.168.1.38 的 MySQL（数据持久化）；想零依赖内存库可设 SPRING_PROFILES_ACTIVE=h2
   # Nacos 注册发现 + 配置中心（地址/账号支持环境变量覆盖；config.import 用 optional，
   # Nacos 不可用时应用仍能本地启动，仅注册/远程配置失效）
   cloud:
