@@ -7,7 +7,7 @@
 
 ```
 zhishu/
-├── backend/   Spring Boot(Java 17) + Spring Cloud Alibaba Nacos + MyBatis-Plus + H2/MySQL + JWT + MinIO 抽象
+├── backend/   Spring Boot(Java 17) + Spring Cloud Alibaba Nacos + MyBatis-Plus + MySQL(默认)/H2 + JWT + MinIO 抽象
 ├── web/       React 18 + TypeScript + Vite + Ant Design + Zustand
 └── mini/      原生微信小程序（WXML + JS）
 ```
@@ -35,13 +35,16 @@ zhishu/
 
 ## 运行
 
-### 后端（默认 H2 内存库，零配置）
+### 后端（默认 MySQL，数据持久化）
 ```bash
+# 首次：在 MySQL（默认 192.168.1.38，与 Nacos 同机，root/root）建库建表灌种子
+bash scripts/init-mysql.sh
+# 启动（端口 8080）
 cd backend
-JAVA_HOME=/path/to/jdk17 mvn spring-boot:run     # 端口 8080
-# 生产切 MySQL：--spring.profiles.active=mysql
+JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
+# MySQL 地址/账号可用环境变量覆盖：MYSQL_HOST、MYSQL_USER、MYSQL_PASSWORD、MYSQL_DB
+# 不想依赖远程库时：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
 ```
-> H2 需 Java17 编译：`export JAVA_HOME=$(/usr/libexec/java_home -v 17)`
 
 ### Web
 ```bash
@@ -60,7 +63,8 @@ npm install && npm run dev        # 端口 5173，/api 代理到 8080
 - 用户：`/api/user/profile` `/favorites`(列表/添加/删除) `/history`(列表/上报)
 
 ## 数据初始化
-H2 自动执行 `backend/src/main/resources/db/schema.sql` + `data.sql`，含种子博主/分类/视频/文章。
+- **MySQL（默认）**：`scripts/init-mysql.sh` 建库 `zhishu`(utf8mb4) 并执行 `db/schema.sql` + `data.sql`（种子博主/分类/视频/文章）。需要本机有 JDK17，不需要 mysql 客户端；库中已有表时拒绝重跑，`INIT_FORCE=1` 可强制重建（会清空数据）。
+- **H2**：切到 h2 profile 时自动执行同样的 schema/data 脚本，数据仅在进程内存中。
 
 ## 后续规划（骨架已预留）
 - 真实短信服务替换 MockSmsService

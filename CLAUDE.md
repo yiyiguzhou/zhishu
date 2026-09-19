@@ -6,14 +6,14 @@
 
 AI 学习内容的视频平台，三端结构（详见 README.md）：
 
-- `backend/` Spring Boot 3 (Java 17) + Spring Cloud Alibaba（Nacos 注册发现/配置中心）+ MyBatis-Plus + H2(开发默认，内存库，重启数据重置)/MySQL + JWT；种子数据在 `backend/src/main/resources/db/{schema,data}.sql`。Nacos 开发环境在局域网 `192.168.1.38:8848`（账号 nacos/nacos，分组 `ZHISHU_GROUP`），不可用时不阻断启动；本机自建 Nacos 用 `deploy/nacos/docker-compose.yml`
+- `backend/` Spring Boot 3 (Java 17) + Spring Cloud Alibaba（Nacos 注册发现/配置中心）+ MyBatis-Plus + MySQL(默认，开发库 192.168.1.38:3306，root/root，库名 zhishu)/H2 内存库(`SPRING_PROFILES_ACTIVE=h2`) + JWT；表结构与种子数据在 `backend/src/main/resources/db/{schema,data}.sql`。MySQL 建库建表用 `bash scripts/init-mysql.sh`（应用自身不自动建表）。Nacos 开发环境在局域网 `192.168.1.38:8848`（账号 nacos/nacos，分组 `ZHISHU_GROUP`），不可用时不阻断启动；本机自建 Nacos 用 `deploy/nacos/docker-compose.yml`
 - `web/` React 18 + TypeScript + Vite + Ant Design + Zustand
 - `mini/` 原生微信小程序（WXML + JS），无构建步骤，只能在微信开发者工具中验证
 
 ## 本地开发命令
 
 - 后端（必须 JDK 17，系统默认 Maven 挂的是 JDK 26，会失败）：
-  `cd backend && JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn spring-boot:run`，端口 8080
+  `cd backend && JAVA_HOME=$(/usr/libexec/java_home -v 17) mvn spring-boot:run`，端口 8080，默认连 192.168.1.38 的 MySQL；新环境首次先跑 `bash scripts/init-mysql.sh` 建库建表
 - Web：`cd web && npm install && npm run dev`，端口 5173（用 http://localhost:5173，Vite 只监听 IPv6）
 - 小程序：微信开发者工具导入 `mini/`；`mini/app.js` 的 `globalData.baseUrl` 指向后端
 - 一键验证：`bash scripts/verify.sh`（后端编译 + Web 类型检查）
