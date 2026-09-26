@@ -30,10 +30,15 @@ zhishu:
     secret: "zhishu-skeleton-jwt-secret-please-change-in-prod-0123456789"
     expire-hours: 168
   media:
-    # local | minio —— 视频流来源模式
-    mode: local
-    # local 模式：视频根目录，返回 /media/** 静态资源地址
+    # local | minio | nas —— 视频流来源模式（线上 OSS 时扩展 oss）
+    mode: nas
+    # local 模式：视频根目录
     local-dir: ./media
+    # nas 模式：SMB 共享挂载目录（挂载操作见 scripts/mount-nas.sh）
+    nas:
+      host: ${NAS_IP:192.168.1.2}
+      share: ${NAS_SHARE:zhishu-video}
+      mount-dir: ${NAS_MOUNT_DIR:${user.home}/mnt/zhishu-video}
     # minio 模式配置（骨架占位）
     minio:
       endpoint: http://localhost:9000
