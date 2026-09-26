@@ -14,8 +14,10 @@ zhishu/
 
 ## 核心设计
 
-- **视频来源抽象 `StreamSource`**：后端可按 `zhishu.media.mode` 在 `local`(默认)/`minio` 间切换，
-  接入 NAS / Jellyfin / Plex 直链只需新增一个 Resolver。
+- **视频来源抽象 `StreamSource`**：后端按 `zhishu.media.mode` 在 `local`/`minio`/`nas` 间切换
+  （线上预留 `oss`）；接入 NAS/Jellyfin/Plex/OSS 只需新增一个 Resolver。
+- **视频元数据模型**：video 经 `category_id` 外键关联 `category`（视频类别）、
+  `blogger_id` 关联 `blogger`（作者），标签走 `tag` + `video_tag` 多对多。
 - **两种分类共用 category 表**：按技术(`video_tech`，harness/mcp/rag…) 或按博主(`blogger`)。
 - **认证**：小程序微信快速登录(`wx.login`→openid)；Web 手机号+验证码（开发期占位码 `123456`）。
 
@@ -33,17 +35,41 @@ zhishu/
   `NACOS_SERVER_ADDR`（如 `127.0.0.1:8848`）、`NACOS_USERNAME`、`NACOS_PASSWORD`
 - Nacos 暂时连不上不阻断后端启动（`fail-fast=false`，恢复后自动重连并重新注册）
 
+## NAS 视频源
+
+视频文件存放在局域网 NAS（WD My Cloud EX2 Ultra，`192.168.1.2`），后端通过 SMB 挂载读取：
+
+- **首次配置**（NAS 管理页 http://192.168.1.2）：
+  1. 新建共享文件夹 `zhishu-video`
+  2. 新建用户（如 `zhishu`）并授予该共享读写
+  3. 本机创建凭据文件 `~/.config/zhishu/nas.env`（chmod 600）：
+     ```
+     NAS_IP=192.168.1.2
+     NAS_SHARE=zhishu-video
+     NAS_USER=zhishu
+     NAS_PASSWORD=xxxx
+     ```
+- **挂载**：`bash scripts/mount-nas.sh`（共享挂载到 `~/mnt/zhishu-video`，免 sudo）
+- **开机自动挂载**：`bash scripts/install-nas-autostart.sh`（用户级 LaunchAgent，掉线自动重挂）
+- **文件规范**：共享内按 `rag/`、`harness/`、`mcp/` 等分类存放，
+  文件名与 video.media_key 一一对应（如 `rag/rag-full-guide.mp4`）；
+  浏览器播放要求 MP4/H.264/AAC
+- 卸载：`umount ~/mnt/zhishu-video`
+- media_key 存储中立，将来上阿里云 OSS 时同一值直接作为 Object Key，只需新增 oss 模式 Resolver
+
 ## 运行
 
-### 后端（默认 MySQL，数据持久化）
+### 后端（默认 MySQL + NAS 视频源，数据持久化）
 ```bash
-# 首次：在 MySQL（默认 192.168.1.38，与 Nacos 同机，root/root）建库建表灌种子
+# 环境首次：在 MySQL（默认 192.168.1.38，与 Nacos 同机，root/root）建库建表灌种子
 bash scripts/init-mysql.sh
+# 挂载 NAS 视频共享（见上方 NAS 章节）
+bash scripts/mount-nas.sh
 # 启动（端口 8080）
 cd backend
 JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
-# MySQL 地址/账号可用环境变量覆盖：MYSQL_HOST、MYSQL_USER、MYSQL_PASSWORD、MYSQL_DB
-# 不想依赖远程库时：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
+# MySQL：MYSQL_HOST/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DB；NAS：NAS_IP/NAS_SHARE/NAS_MOUNT_DIR
+# 不想依赖远程环境：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
 ```
 
 ### Web
@@ -68,6 +94,6 @@ npm install && npm run dev        # 端口 5173，/api 代理到 8080
 
 ## 后续规划（骨架已预留）
 - 真实短信服务替换 MockSmsService
-- NAS/Jellyfin/Plex 直链 Resolver
+- 线上阿里云 OSS 视频源（OssMediaResolver，凭据走 Nacos）
 - 视频转码/封面、点赞评论、搜索、推荐
 - 生产 MyBatis 迁移(Flyway)、小程序真实AppID code2session
