@@ -96,6 +96,7 @@ export default function Detail() {
       <Card>
         <video
           key={detail.playUrl}
+          src={detail.playUrl}
           controls
           autoPlay
           preload="metadata"
