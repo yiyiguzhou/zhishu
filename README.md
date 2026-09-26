@@ -14,8 +14,10 @@ zhishu/
 
 ## 核心设计
 
-- **视频来源抽象 `StreamSource`**：后端可按 `zhishu.media.mode` 在 `local`(默认)/`minio` 间切换，
-  接入 NAS / Jellyfin / Plex 直链只需新增一个 Resolver。
+- **视频来源抽象 `StreamSource`**：后端按 `zhishu.media.mode` 在 `local`/`minio`/`nas` 间切换
+  （线上预留 `oss`）；接入 NAS/Jellyfin/Plex/OSS 只需新增一个 Resolver。
+- **视频元数据模型**：video 经 `category_id` 外键关联 `category`（视频类别）、
+  `blogger_id` 关联 `blogger`（作者），标签走 `tag` + `video_tag` 多对多。
 - **两种分类共用 category 表**：按技术(`video_tech`，harness/mcp/rag…) 或按博主(`blogger`)。
 - **认证**：小程序微信快速登录(`wx.login`→openid)；Web 手机号+验证码（开发期占位码 `123456`）。
 
@@ -33,17 +35,56 @@ zhishu/
   `NACOS_SERVER_ADDR`（如 `127.0.0.1:8848`）、`NACOS_USERNAME`、`NACOS_PASSWORD`
 - Nacos 暂时连不上不阻断后端启动（`fail-fast=false`，恢复后自动重连并重新注册）
 
+## 视频存储网关（MinIO + NAS）
+
+视频文件在 NAS（WD My Cloud EX2 Ultra，`192.168.1.2`），但**不由应用服务器直挂**：
+由独立网关机（`192.168.1.38`）挂载 NAS 并运行 MinIO，对外提供 S3/类 OSS API；
+zhishu 后端只是 S3 客户端，解析出预签名播放 URL，播放器直连网关。
+
+> MinIO 官方开源镜像 2025-10 起停发并从 Docker Hub 下架，现使用逐行兼容的社区分支
+> **pgsty/minio**（server 命令、环境变量、`.minio.sys` 磁盘格式、Web 控制台完全一致）。
+
+```
+NAS(.2) ─SMB─▶ .38 挂载点 ─bind─▶ pgsty/minio(:9000 API / :9001 控制台)
+zhishu-backend(.175, mode=minio) ─预签名URL─▶ Web/小程序播放器直连 .38:9000
+```
+
+**① NAS 管理页（http://192.168.1.2）**
+1. 新建共享 `zhishu`，建用户 `zhishu`（密码如 `zhishu1234`）并授予读写
+2. 共享内建目录 `zhishu-video/`（即 bucket），其下按 `rag/`、`harness/`、`mcp/` 分类；
+   文件路径与 video.media_key 对应（`zhishu-video/rag/rag-full-guide.mp4` ↔ key `rag/rag-full-guide.mp4`）；
+   浏览器播放要求 MP4/H.264/AAC
+
+**② 网关机 .38（工件在 `deploy/minio/`）**
+```bash
+# 凭据文件 ~/.config/zhishu/nas.env（chmod 600）：NAS_IP/NAS_SHARE/NAS_USER/NAS_PASSWORD
+bash deploy/minio/mount-nas.sh                    # 挂载 NAS 到 ~/mnt/zhishu（免 sudo）
+bash deploy/minio/install-mount-autostart.sh     # 登录自动挂载（可选）
+cp deploy/minio/.env.example deploy/minio/.env   # MinIO 管理员（密码 >=8 位）
+docker compose -f deploy/minio/docker-compose.yml up -d
+# 控制台 http://192.168.1.38:9001 ；可建专用 service account 给后端用
+```
+
+**③ 应用服务器 .175**：启动时注入网关凭据（不入库）：
+`MINIO_ENDPOINT`（默认已指向 .38）、`MINIO_ACCESS_KEY`、`MINIO_SECRET_KEY`、`MINIO_BUCKET`(默认 zhishu-video)
+
+**重要：对象必须经 S3 API/控制台上传**。直接把文件丢进 NAS 目录不会自动登记
+（SMB 挂载不支持文件事件通知，单盘 xl 模式也不支持 heal 扫描）；临时做法是放入后重启 MinIO 容器。
+- 三种模式按 `zhishu.media.mode` 切换：`minio`(默认，网关) / `nas`(后端本机直挂，脚本在 `scripts/`) / `local`
+- 上阿里云 OSS 时 media_key 直接复用为 Object Key，仅需改 endpoint/凭据并新增 oss Resolver
+
 ## 运行
 
-### 后端（默认 MySQL，数据持久化）
+### 后端（默认 MySQL + MinIO 网关，数据持久化）
 ```bash
-# 首次：在 MySQL（默认 192.168.1.38，与 Nacos 同机，root/root）建库建表灌种子
+# 环境首次：在 MySQL（默认 192.168.1.38，root/root）建库建表灌种子
 bash scripts/init-mysql.sh
-# 启动（端口 8080）
+# 启动（端口 8080）；MinIO 网关需已在 .38 运行，凭据走环境变量
 cd backend
-JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
-# MySQL 地址/账号可用环境变量覆盖：MYSQL_HOST、MYSQL_USER、MYSQL_PASSWORD、MYSQL_DB
-# 不想依赖远程库时：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
+MINIO_ACCESS_KEY=xxxx MINIO_SECRET_KEY=xxxx \
+  JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
+# MySQL：MYSQL_HOST/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DB
+# 不想依赖远程环境：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
 ```
 
 ### Web
@@ -68,6 +109,6 @@ npm install && npm run dev        # 端口 5173，/api 代理到 8080
 
 ## 后续规划（骨架已预留）
 - 真实短信服务替换 MockSmsService
-- NAS/Jellyfin/Plex 直链 Resolver
+- 线上阿里云 OSS 视频源（OssMediaResolver，凭据走 Nacos）
 - 视频转码/封面、点赞评论、搜索、推荐
 - 生产 MyBatis 迁移(Flyway)、小程序真实AppID code2session

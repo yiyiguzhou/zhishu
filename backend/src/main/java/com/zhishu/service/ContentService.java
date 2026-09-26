@@ -41,8 +41,9 @@ public class ContentService {
         List<Article> articles = articleMapper.selectList(new LambdaQueryWrapper<Article>()
                 .orderByDesc(Article::getHotScore).last("LIMIT " + lim));
         Map<Long, Blogger> bloggers = bloggerMap();
+        Map<Long, Category> categories = categoryMap();
         List<VideoDTO> vs = videos.stream()
-                .map(v -> toVideoDTO(v, bloggers))
+                .map(v -> toVideoDTO(v, bloggers, categories))
                 .collect(Collectors.toList());
         List<ArticleDTO> as = articles.stream()
                 .map(a -> toArticleDTO(a, bloggers))
@@ -58,12 +59,17 @@ public class ContentService {
                 .stream().map(CategoryDTO::of).collect(Collectors.toList());
     }
 
-    /** 按技术分类取视频。 */
+    /** 按技术分类取视频：key 是 category.cat_key，视频按 category_id 关联。 */
     public List<VideoDTO> videosByCategory(String key) {
+        Category category = categoryMapper.selectOne(new LambdaQueryWrapper<Category>()
+                .eq(Category::getCatKey, key));
+        if (category == null) {
+            return Collections.emptyList();
+        }
         List<Video> videos = videoMapper.selectList(new LambdaQueryWrapper<Video>()
-                .eq(Video::getCategoryKey, key)
+                .eq(Video::getCategoryId, category.getId())
                 .orderByDesc(Video::getHotScore));
-        return videos.stream().map(v -> toVideoDTO(v, bloggerMap())).collect(Collectors.toList());
+        return videos.stream().map(v -> toVideoDTO(v, bloggerMap(), categoryMap())).collect(Collectors.toList());
     }
 
     /** 博主列表。 */
@@ -77,7 +83,7 @@ public class ContentService {
         List<Video> videos = videoMapper.selectList(new LambdaQueryWrapper<Video>()
                 .eq(Video::getBloggerId, bloggerId)
                 .orderByDesc(Video::getHotScore));
-        return videos.stream().map(v -> toVideoDTO(v, bloggerMap())).collect(Collectors.toList());
+        return videos.stream().map(v -> toVideoDTO(v, bloggerMap(), categoryMap())).collect(Collectors.toList());
     }
 
     private Map<Long, Blogger> bloggerMap() {
@@ -85,13 +91,19 @@ public class ContentService {
                 .collect(Collectors.toMap(Blogger::getId, Function.identity()));
     }
 
-    private VideoDTO toVideoDTO(Video v, Map<Long, Blogger> bloggers) {
+    private Map<Long, Category> categoryMap() {
+        return categoryMapper.selectList(null).stream()
+                .collect(Collectors.toMap(Category::getId, Function.identity()));
+    }
+
+    private VideoDTO toVideoDTO(Video v, Map<Long, Blogger> bloggers, Map<Long, Category> categories) {
         VideoDTO dto = new VideoDTO();
         dto.setId(v.getId());
         dto.setTitle(v.getTitle());
         dto.setCover(v.getCover());
         dto.setDuration(v.getDuration());
-        dto.setCategoryKey(v.getCategoryKey());
+        Category c = categories.get(v.getCategoryId());
+        dto.setCategoryKey(c != null ? c.getCatKey() : null);
         dto.setHotScore(v.getHotScore());
         dto.setCreatedAt(v.getCreatedAt());
         Blogger b = bloggers.get(v.getBloggerId());

@@ -30,16 +30,21 @@ zhishu:
     secret: "zhishu-skeleton-jwt-secret-please-change-in-prod-0123456789"
     expire-hours: 168
   media:
-    # local | minio —— 视频流来源模式
-    mode: local
-    # local 模式：视频根目录，返回 /media/** 静态资源地址
+    # local | minio | nas —— 视频流来源模式（线上 OSS 时扩展 oss）
+    mode: minio
+    # local 模式：视频根目录
     local-dir: ./media
-    # minio 模式配置（骨架占位）
+    # minio 模式：视频存储网关（MinIO 在 192.168.1.38，NAS 由该网关挂载）
     minio:
-      endpoint: http://localhost:9000
-      access-key: minioadmin
-      secret-key: minioadmin
-      bucket: zhishu-video
+      endpoint: ${MINIO_ENDPOINT:http://192.168.1.38:9000}
+      access-key: ${MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      bucket: ${MINIO_BUCKET:zhishu-video}
+    # nas 模式（备选）：后端本机直挂 NAS 共享
+    nas:
+      host: ${NAS_IP:192.168.1.2}
+      share: ${NAS_SHARE:zhishu-video}
+      mount-dir: ${NAS_MOUNT_DIR:${user.home}/mnt/zhishu-video}
   wx:
     # 微信小程序 code2session 占位配置；骨架模式 WX_APPID/SECRET 为空时返回 mock openid
     app-id: ""

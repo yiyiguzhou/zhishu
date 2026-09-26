@@ -62,7 +62,9 @@ export interface VideoDetailDTO {
   title: string;
   cover?: string;
   duration?: number;
-  categoryKey?: string;
+  categoryId?: number;
+  categoryName?: string;
+  tags?: string[];
   bloggerId?: number;
   authorName?: string;
   authorAvatar?: string;

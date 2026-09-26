@@ -25,6 +25,9 @@
 
   <view class="card title-block">
     <view class="detail-title">{{detail.title}}</view>
-    <view class="detail-meta">{{detail.categoryKey}} · {{detail.durationText}}</view>
+    <view class="detail-meta">{{detail.categoryName}} · {{detail.durationText}}</view>
+    <view class="tag-row" wx:if="{{detail.tags.length}}">
+      <text class="tag-chip" wx:for="{{detail.tags}}" wx:key="*this">#{{item}}</text>
+    </view>
   </view>
 </view>
