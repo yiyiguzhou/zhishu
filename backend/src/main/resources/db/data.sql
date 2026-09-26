@@ -18,11 +18,11 @@ INSERT INTO category (id, name, cat_key, cat_type) VALUES
   (8, 'LLM入门指南', 'blogger_4', 'blogger');
 
 INSERT INTO video (id, title, blogger_id, category_id, cover, media_key, duration, hot_score, source_type, play_url) VALUES
-  (1, 'RAG全流程实战：从索引到生成', 1, 3, 'https://placehold.co/400x225?text=RAG', 'rag/rag-full-guide.mp4', 1520, 980, 'nas', NULL),
-  (2, '用Harness编排你的第一个Agent', 2, 1, 'https://placehold.co/400x225?text=Harness', 'harness/harness-agent.mp4', 860, 810, 'nas', NULL),
-  (3, 'MCP协议详解：工具即服务', 3, 2, 'https://placehold.co/400x225?text=MCP', 'mcp/mcp-tool-as-service.mp4', 1200, 760, 'nas', NULL),
-  (4, '大模型RAG问答的正确姿势', 4, 3, 'https://placehold.co/400x225?text=QA', 'rag/rag-qa-mistakes.mp4', 640, 920, 'nas', NULL),
-  (5, 'Harness控制台快速上手', 2, 1, 'https://placehold.co/400x225?text=Console', 'harness/harness-console.mp4', 500, 450, 'nas', NULL);
+  (1, 'RAG全流程实战：从索引到生成', 1, 3, 'https://placehold.co/400x225?text=RAG', 'rag/rag-full-guide.mp4', 1520, 980, 'minio', NULL),
+  (2, '用Harness编排你的第一个Agent', 2, 1, 'https://placehold.co/400x225?text=Harness', 'harness/harness-agent.mp4', 860, 810, 'minio', NULL),
+  (3, 'MCP协议详解：工具即服务', 3, 2, 'https://placehold.co/400x225?text=MCP', 'mcp/mcp-tool-as-service.mp4', 1200, 760, 'minio', NULL),
+  (4, '大模型RAG问答的正确姿势', 4, 3, 'https://placehold.co/400x225?text=QA', 'rag/rag-qa-mistakes.mp4', 640, 920, 'minio', NULL),
+  (5, 'Harness控制台快速上手', 2, 1, 'https://placehold.co/400x225?text=Console', 'harness/harness-console.mp4', 500, 450, 'minio', NULL);
 
 INSERT INTO tag (id, name) VALUES
   (1, 'RAG'),
