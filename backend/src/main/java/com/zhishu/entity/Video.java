@@ -14,10 +14,10 @@ public class Video {
     private Long id;
     private String title;
     private Long bloggerId;
+    private Long categoryId;
     private String cover;
     private String mediaKey;
     private Integer duration;
-    private String categoryKey;
     private Integer hotScore;
     private String sourceType;
     private String playUrl;
