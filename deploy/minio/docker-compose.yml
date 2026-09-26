@@ -1,15 +1,16 @@
 # MinIO 视频存储网关（.38）：S3 API 9000 / 控制台 9001，数据目录为 NAS 共享挂载点
-# 用法（在 .38 上）：先 bash mount-nas.sh，复制 .env.example 为 .env 并改密码，docker compose up -d
+# 用法（在 .38 上）：先 bash mount-nas.sh，复制 .env.example 为 .env，docker compose up -d
 services:
   minio:
-    image: minio/minio:RELEASE.2025-10-15T17-29-55Z
+    # 官方 minio/minio 已停发并下架，使用逐行兼容的社区分支 pgsty/minio（命令/环境变量/磁盘格式一致）
+    image: pgsty/minio:RELEASE.2026-06-18T00-00-00Z
     container_name: zhishu-minio
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}          # 至少 3 位
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}  # 至少 8 位
     volumes:
-      # NAS 共享在主机的挂载点；bucket 为共享内的 zhishu-video 目录
+      # NAS zhishu 共享在主机的挂载点（bucket 为共享内的 zhishu-video 目录）
       - ${NAS_HOST_MOUNT:-$HOME/mnt/zhishu}:/data
     ports:
       - "9000:9000"

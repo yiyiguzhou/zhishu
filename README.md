@@ -41,13 +41,16 @@ zhishu/
 由独立网关机（`192.168.1.38`）挂载 NAS 并运行 MinIO，对外提供 S3/类 OSS API；
 zhishu 后端只是 S3 客户端，解析出预签名播放 URL，播放器直连网关。
 
+> MinIO 官方开源镜像 2025-10 起停发并从 Docker Hub 下架，现使用逐行兼容的社区分支
+> **pgsty/minio**（server 命令、环境变量、`.minio.sys` 磁盘格式、Web 控制台完全一致）。
+
 ```
-NAS(.2) ─SMB─▶ .38 挂载点 ─bind─▶ MinIO(:9000 API / :9001 控制台)
+NAS(.2) ─SMB─▶ .38 挂载点 ─bind─▶ pgsty/minio(:9000 API / :9001 控制台)
 zhishu-backend(.175, mode=minio) ─预签名URL─▶ Web/小程序播放器直连 .38:9000
 ```
 
 **① NAS 管理页（http://192.168.1.2）**
-1. 新建共享 `zhishu`，建用户（如 `zhishu`）并授予读写
+1. 新建共享 `zhishu`，建用户 `zhishu`（密码如 `zhishu1234`）并授予读写
 2. 共享内建目录 `zhishu-video/`（即 bucket），其下按 `rag/`、`harness/`、`mcp/` 分类；
    文件路径与 video.media_key 对应（`zhishu-video/rag/rag-full-guide.mp4` ↔ key `rag/rag-full-guide.mp4`）；
    浏览器播放要求 MP4/H.264/AAC
@@ -57,7 +60,7 @@ zhishu-backend(.175, mode=minio) ─预签名URL─▶ Web/小程序播放器直
 # 凭据文件 ~/.config/zhishu/nas.env（chmod 600）：NAS_IP/NAS_SHARE/NAS_USER/NAS_PASSWORD
 bash deploy/minio/mount-nas.sh                    # 挂载 NAS 到 ~/mnt/zhishu（免 sudo）
 bash deploy/minio/install-mount-autostart.sh     # 登录自动挂载（可选）
-cp deploy/minio/.env.example deploy/minio/.env   # 设置 MinIO 管理员账号密码
+cp deploy/minio/.env.example deploy/minio/.env   # MinIO 管理员（密码 >=8 位）
 docker compose -f deploy/minio/docker-compose.yml up -d
 # 控制台 http://192.168.1.38:9001 ；可建专用 service account 给后端用
 ```
@@ -65,7 +68,8 @@ docker compose -f deploy/minio/docker-compose.yml up -d
 **③ 应用服务器 .175**：启动时注入网关凭据（不入库）：
 `MINIO_ENDPOINT`（默认已指向 .38）、`MINIO_ACCESS_KEY`、`MINIO_SECRET_KEY`、`MINIO_BUCKET`(默认 zhishu-video)
 
-- 经 SMB 直接放进目录的文件在 MinIO 单盘模式下立即可见；上传也可走 9001 控制台
+**重要：对象必须经 S3 API/控制台上传**。直接把文件丢进 NAS 目录不会自动登记
+（SMB 挂载不支持文件事件通知，单盘 xl 模式也不支持 heal 扫描）；临时做法是放入后重启 MinIO 容器。
 - 三种模式按 `zhishu.media.mode` 切换：`minio`(默认，网关) / `nas`(后端本机直挂，脚本在 `scripts/`) / `local`
 - 上阿里云 OSS 时 media_key 直接复用为 Object Key，仅需改 endpoint/凭据并新增 oss Resolver
 

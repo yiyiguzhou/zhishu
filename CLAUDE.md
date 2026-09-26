@@ -6,7 +6,7 @@
 
 AI 学习内容的视频平台，三端结构（详见 README.md）：
 
-- `backend/` Spring Boot 3 (Java 17) + Spring Cloud Alibaba（Nacos 注册发现/配置中心）+ MyBatis-Plus + MySQL(默认，开发库 192.168.1.38:3306，root/root，库名 zhishu)/H2 内存库(`SPRING_PROFILES_ACTIVE=h2`) + JWT；表结构与种子数据在 `backend/src/main/resources/db/{schema,data}.sql`。视频经外键关联 category（类别）/blogger（作者），标签走 tag + video_tag。视频源默认 minio 模式：视频存储网关 MinIO 在 192.168.1.38:9000（compose 在 `deploy/minio/`，该网关机挂载 NAS 192.168.1.2 的共享，MinIO 凭据用 `MINIO_ACCESS_KEY/SECRET_KEY` 环境变量注入）；nas 模式（后端本机直挂 NAS，脚本 `scripts/mount-nas.sh`）与 local 模式为备选。MySQL 建库建表用 `bash scripts/init-mysql.sh`（应用自身不自动建表）。Nacos 开发环境在局域网 `192.168.1.38:8848`（账号 nacos/nacos，分组 `ZHISHU_GROUP`），不可用时不阻断启动；本机自建 Nacos 用 `deploy/nacos/docker-compose.yml`。线上视频源将切阿里云 OSS，media_key 保持存储中立、新增 oss Resolver 即可
+- `backend/` Spring Boot 3 (Java 17) + Spring Cloud Alibaba（Nacos 注册发现/配置中心）+ MyBatis-Plus + MySQL(默认，开发库 192.168.1.38:3306，root/root，库名 zhishu)/H2 内存库(`SPRING_PROFILES_ACTIVE=h2`) + JWT；表结构与种子数据在 `backend/src/main/resources/db/{schema,data}.sql`。视频经外键关联 category（类别）/blogger（作者），标签走 tag + video_tag。视频源默认 minio 模式：视频存储网关在 192.168.1.38:9000（官方 minio/minio 已停发，使用逐行兼容的 pgsty/minio；compose 在 `deploy/minio/`，该网关机挂载 NAS 192.168.1.2 的 zhishu 共享，MinIO 凭据用 `MINIO_ACCESS_KEY/SECRET_KEY` 环境变量注入，对象需经 API/控制台上传）；nas 模式（后端本机直挂 NAS，脚本 `scripts/mount-nas.sh`）与 local 模式为备选。MySQL 建库建表用 `bash scripts/init-mysql.sh`（应用自身不自动建表）。Nacos 开发环境在局域网 `192.168.1.38:8848`（账号 nacos/nacos，分组 `ZHISHU_GROUP`），不可用时不阻断启动；本机自建 Nacos 用 `deploy/nacos/docker-compose.yml`。线上视频源将切阿里云 OSS，media_key 保持存储中立、新增 oss Resolver 即可
 - `web/` React 18 + TypeScript + Vite + Ant Design + Zustand
 - `mini/` 原生微信小程序（WXML + JS），无构建步骤，只能在微信开发者工具中验证
 
