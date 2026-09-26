@@ -35,40 +35,51 @@ zhishu/
   `NACOS_SERVER_ADDR`（如 `127.0.0.1:8848`）、`NACOS_USERNAME`、`NACOS_PASSWORD`
 - Nacos 暂时连不上不阻断后端启动（`fail-fast=false`，恢复后自动重连并重新注册）
 
-## NAS 视频源
+## 视频存储网关（MinIO + NAS）
 
-视频文件存放在局域网 NAS（WD My Cloud EX2 Ultra，`192.168.1.2`），后端通过 SMB 挂载读取：
+视频文件在 NAS（WD My Cloud EX2 Ultra，`192.168.1.2`），但**不由应用服务器直挂**：
+由独立网关机（`192.168.1.38`）挂载 NAS 并运行 MinIO，对外提供 S3/类 OSS API；
+zhishu 后端只是 S3 客户端，解析出预签名播放 URL，播放器直连网关。
 
-- **首次配置**（NAS 管理页 http://192.168.1.2）：
-  1. 新建共享文件夹 `zhishu-video`
-  2. 新建用户（如 `zhishu`）并授予该共享读写
-  3. 本机创建凭据文件 `~/.config/zhishu/nas.env`（chmod 600）：
-     ```
-     NAS_IP=192.168.1.2
-     NAS_SHARE=zhishu-video
-     NAS_USER=zhishu
-     NAS_PASSWORD=xxxx
-     ```
-- **挂载**：`bash scripts/mount-nas.sh`（共享挂载到 `~/mnt/zhishu-video`，免 sudo）
-- **开机自动挂载**：`bash scripts/install-nas-autostart.sh`（用户级 LaunchAgent，掉线自动重挂）
-- **文件规范**：共享内按 `rag/`、`harness/`、`mcp/` 等分类存放，
-  文件名与 video.media_key 一一对应（如 `rag/rag-full-guide.mp4`）；
-  浏览器播放要求 MP4/H.264/AAC
-- 卸载：`umount ~/mnt/zhishu-video`
-- media_key 存储中立，将来上阿里云 OSS 时同一值直接作为 Object Key，只需新增 oss 模式 Resolver
+```
+NAS(.2) ─SMB─▶ .38 挂载点 ─bind─▶ MinIO(:9000 API / :9001 控制台)
+zhishu-backend(.175, mode=minio) ─预签名URL─▶ Web/小程序播放器直连 .38:9000
+```
+
+**① NAS 管理页（http://192.168.1.2）**
+1. 新建共享 `zhishu`，建用户（如 `zhishu`）并授予读写
+2. 共享内建目录 `zhishu-video/`（即 bucket），其下按 `rag/`、`harness/`、`mcp/` 分类；
+   文件路径与 video.media_key 对应（`zhishu-video/rag/rag-full-guide.mp4` ↔ key `rag/rag-full-guide.mp4`）；
+   浏览器播放要求 MP4/H.264/AAC
+
+**② 网关机 .38（工件在 `deploy/minio/`）**
+```bash
+# 凭据文件 ~/.config/zhishu/nas.env（chmod 600）：NAS_IP/NAS_SHARE/NAS_USER/NAS_PASSWORD
+bash deploy/minio/mount-nas.sh                    # 挂载 NAS 到 ~/mnt/zhishu（免 sudo）
+bash deploy/minio/install-mount-autostart.sh     # 登录自动挂载（可选）
+cp deploy/minio/.env.example deploy/minio/.env   # 设置 MinIO 管理员账号密码
+docker compose -f deploy/minio/docker-compose.yml up -d
+# 控制台 http://192.168.1.38:9001 ；可建专用 service account 给后端用
+```
+
+**③ 应用服务器 .175**：启动时注入网关凭据（不入库）：
+`MINIO_ENDPOINT`（默认已指向 .38）、`MINIO_ACCESS_KEY`、`MINIO_SECRET_KEY`、`MINIO_BUCKET`(默认 zhishu-video)
+
+- 经 SMB 直接放进目录的文件在 MinIO 单盘模式下立即可见；上传也可走 9001 控制台
+- 三种模式按 `zhishu.media.mode` 切换：`minio`(默认，网关) / `nas`(后端本机直挂，脚本在 `scripts/`) / `local`
+- 上阿里云 OSS 时 media_key 直接复用为 Object Key，仅需改 endpoint/凭据并新增 oss Resolver
 
 ## 运行
 
-### 后端（默认 MySQL + NAS 视频源，数据持久化）
+### 后端（默认 MySQL + MinIO 网关，数据持久化）
 ```bash
-# 环境首次：在 MySQL（默认 192.168.1.38，与 Nacos 同机，root/root）建库建表灌种子
+# 环境首次：在 MySQL（默认 192.168.1.38，root/root）建库建表灌种子
 bash scripts/init-mysql.sh
-# 挂载 NAS 视频共享（见上方 NAS 章节）
-bash scripts/mount-nas.sh
-# 启动（端口 8080）
+# 启动（端口 8080）；MinIO 网关需已在 .38 运行，凭据走环境变量
 cd backend
-JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
-# MySQL：MYSQL_HOST/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DB；NAS：NAS_IP/NAS_SHARE/NAS_MOUNT_DIR
+MINIO_ACCESS_KEY=xxxx MINIO_SECRET_KEY=xxxx \
+  JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
+# MySQL：MYSQL_HOST/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DB
 # 不想依赖远程环境：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
 ```
 
