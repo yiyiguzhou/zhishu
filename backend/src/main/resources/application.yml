@@ -31,20 +31,20 @@ zhishu:
     expire-hours: 168
   media:
     # local | minio | nas —— 视频流来源模式（线上 OSS 时扩展 oss）
-    mode: nas
+    mode: minio
     # local 模式：视频根目录
     local-dir: ./media
-    # nas 模式：SMB 共享挂载目录（挂载操作见 scripts/mount-nas.sh）
+    # minio 模式：视频存储网关（MinIO 在 192.168.1.38，NAS 由该网关挂载）
+    minio:
+      endpoint: ${MINIO_ENDPOINT:http://192.168.1.38:9000}
+      access-key: ${MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${MINIO_SECRET_KEY:minioadmin}
+      bucket: ${MINIO_BUCKET:zhishu-video}
+    # nas 模式（备选）：后端本机直挂 NAS 共享
     nas:
       host: ${NAS_IP:192.168.1.2}
       share: ${NAS_SHARE:zhishu-video}
       mount-dir: ${NAS_MOUNT_DIR:${user.home}/mnt/zhishu-video}
-    # minio 模式配置（骨架占位）
-    minio:
-      endpoint: http://localhost:9000
-      access-key: minioadmin
-      secret-key: minioadmin
-      bucket: zhishu-video
   wx:
     # 微信小程序 code2session 占位配置；骨架模式 WX_APPID/SECRET 为空时返回 mock openid
     app-id: ""
