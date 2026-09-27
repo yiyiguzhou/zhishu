@@ -24,13 +24,11 @@
 ┌───────▼───────────────┐      ┌──────────▼──────────────────────┐
 │ 数据/网关机 .38        │      │ MinIO 网关（运行在 .38）          │
 │ MySQL 8（zhishu 库）   │      │ S3 API :9000 / 控制台 :9001      │
-│ Nacos 2.5.4           │◀─────│ 数据目录 bind 自 NAS 挂载点       │
-│ 注册/配置中心          │      └──────────┬───────────────────────┘
-└───────────────────────┘                 │ SMB
-                                 ┌────────▼────────┐
-                                 │ NAS 192.168.1.2 │
-                                 │ EX2 Ultra       │
-                                 └─────────────────┘
+│ Nacos 2.5.4           │◀─────│ 数据目录 bind 自本机磁盘目录       │
+│ 注册/配置中心          │      │ ~/Documents/YouTube              │
+└───────────────────────┘      └──────────────────────────────────┘
+
+# NAS（WD My Cloud EX2 Ultra）保留为可选物理存储，当前本地调试不挂载
 ```
 
 ## 2. 技术选型
@@ -43,7 +41,8 @@
 | 数据库 | MySQL | 8.x | 生产/开发持久化；库名 zhishu、utf8mb4 |
 | 开发数据库 | H2 | 随 Boot | 内存模式零外部依赖，MySQL 兼容方言 |
 | 对象存储网关 | pgsty/minio | RELEASE.2026-06-18 | S3 兼容；官方 minio/minio 停发后的社区逐行兼容分支 |
-| 物理存储 | WD My Cloud EX2 Ultra | — | NAS，SMB 共享 `zhishu` |
+| 网关数据目录 | 本机磁盘 | — | `~/Documents/YouTube`（macOS 需 TCC 授权） |
+| 物理存储（可选） | WD My Cloud EX2 Ultra | — | NAS；本地调试当前不使用 |
 | 认证 | JWT (jjwt) | 0.12.6 | 无状态 Token，有效期 7 天 |
 | Web | React + TypeScript | 18 / Vite 5 | Ant Design 5 组件库、Zustand 状态管理 |
 | 小程序 | 原生微信小程序 | — | WXML/WXSS/JS，无构建步骤 |
@@ -125,10 +124,8 @@ public interface StreamSource {
 | 主机 | 角色 | 关键端口/路径 |
 |---|---|---|
 | 192.168.1.175 | 应用服务器：Spring Boot（8080）、Vite（5173） | `/api`、`/media` |
-| 192.168.1.38 | MySQL 8（3306）、Nacos（8848 HTTP / 9848 gRPC）、MinIO（9000 API / 9001 控制台） | NAS 挂载点 `~/mnt/zhishu`（LaunchAgent 自动挂载） |
-| 192.168.1.2 | NAS：SMB 共享 `zhishu`，bucket 目录 `zhishu-video` | SMB 445 |
-
-MinIO 对象上传约束：**必须经 S3 API 或 9001 控制台**。SMB 挂载无文件事件通知、单盘 xl 模式不支持 heal，直接丢入目录的文件不会登记（临时手段：重启 MinIO 容器）。
+| 192.168.1.38 | MySQL 8（3306）、Nacos（8848 HTTP / 9848 gRPC）、MinIO（9000 API / 9001 控制台） | 数据目录 `~/Documents/YouTube`（本机磁盘） |
+| 192.168.1.2 | NAS（可选，当前不挂载） | SMB 445 |
 
 ## 6. API 总览
 

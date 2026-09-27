@@ -9,12 +9,22 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 | 角色 | 地址 | 说明 |
 |---|---|---|
 | 应用服务器（后端/Web） | 192.168.1.175 | macOS，Spring Boot + React |
-| 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos 2.5.4、MinIO 网关（pgsty/minio） |
-| NAS | 192.168.1.2 | WD My Cloud EX2 Ultra，zhishu 共享（bucket 目录 zhishu-video） |
+| 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos 2.5.4、MinIO（数据目录本机 `~/Documents/YouTube`） |
+| NAS（可选，当前不使用） | 192.168.1.2 | WD My Cloud EX2 Ultra |
 
 **里程碑 Tags**：`baseline-skeleton`（骨架基线）→ `arch-nacos`（Nacos）→ `data-mysql`（MySQL）→ `media-minio-gateway`（视频网关）
 
 ---
+
+## 2026-09-27 · 视频源改用网关机本机目录（脱离 NAS）
+
+- 本地调试不再挂 NAS：MinIO 数据目录改到 .38 本机 `~/Documents/YouTube`，
+  compose 用 `MINIO_DATA_DIR` 参数化；NAS SMB 看门狗与 LaunchAgent 已从网关机移除
+- 迁移完成：bucket zhishu-video 现有 7 个对象（6 个 YouTube MP4 + `rag/rag-full-guide.mp4`）
+- 新增授权经验：首次 bind `~/Documents` 需在网关机弹窗中允许（TCC）
+- 排障中 Docker 引擎 create/start 路径挂死（旧操作残留），全量重启 Docker Desktop 恢复
+- 验证：预签名 URL GET 200（video/mp4）、Range 206
+- README、技术架构文档同步
 
 ## 2026-09-27 · 网关 SMB 故障修复与自愈加固
 
