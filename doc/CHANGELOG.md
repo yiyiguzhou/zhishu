@@ -16,6 +16,16 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-27 · 网关 SMB 故障修复与自愈加固
+
+- **故障**：NAS SMB 会话中途失效导致陈旧挂载（读写永久阻塞、Finder 手动连接卡在"正在连接"）；
+  卡死的 I/O 使进程进入不可中断 U 态，软件层 umount 无效 → **重启 .38 恢复**
+- 挂载改用 **soft 模式**（`mount_smbfs -o soft`）：连接故障时自动卸载而非永久挂死
+- 网关挂载脚本升级为**看门狗**：挂载失败自动重试（NAS 恢复后挂载会间歇失败）、驻留检测丢失后
+  自动重挂并重启 MinIO 恢复 /data 绑定（`deploy/minio/mount-nas.sh`），LaunchAgent 常驻
+- 验证：GET 200、Range 206 播放正常
+- 经验：容器删除/MinIO 容器重启是恢复 bind 挂载的必要步骤；排查中避免反复执行 lsof（会产生大量 U 态残留进程）
+
 ## 2026-09-27 · 架构文档整理
 
 - 新增 `doc/architecture/technical-architecture.md`：三端架构总览、技术选型、后端分层、
