@@ -16,6 +16,12 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-27 · 视频首帧自动生成封面
+
+- ffmpeg 从源 MP4 抽取首帧（1280 宽，JPEG ~50KB），上传至 bucket `covers/` 前缀
+- covers 前缀设为 anonymous download（封面需免登录展示；视频播放仍走预签名）
+- video.cover 更新 6 行，data.sql 固化；验证封面 URL 200
+
 ## 2026-09-27 · 视频按标题完成技术分类
 
 - 新增 3 个技术类别：AI编程(ai-coding)、AI动态(ai-trends)、基础概念(fundamentals)，共 11 个分类
