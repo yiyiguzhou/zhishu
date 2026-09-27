@@ -16,6 +16,17 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-27 · 真实视频入库，mock 视频数据下线
+
+- video 表 5 条 mock 记录替换为 **6 条真实视频记录**（对应 bucket zhishu-video 全部对象）
+- 视频的 `blogger_id/category_id` 置空，由用户后续更新；video_tag 关联清空（tag 字典保留）
+- **标题与文件名分离**：title 保留中文真实标题，media_key 改用规范英文名
+  （ai-frontier.mp4 等）；起因是 MinIO/mc 对对象 key 中 `#` 字符支持异常
+  （列表可见但 GET NoSuchKey、无法 rm/cp），英文 key 同时利于 OSS 迁移
+- bucket 清理：删除含 # 的残留对象（xl 残留目录，主机层 rm），测试副本不再保留
+- 验证：6 条视频预签名 URL 全部 GET 200、Range 206，首页展示真实标题
+- 原始中文名 MP4 保留在网关机数据根（bucket 外），作为源文件备份
+
 ## 2026-09-27 · 视频源改用网关机本机目录（脱离 NAS）
 
 - 本地调试不再挂 NAS：MinIO 数据目录改到 .38 本机 `~/Documents/YouTube`，

@@ -1,5 +1,6 @@
--- 演示种子数据：博主 + 两类分类 + 视频（关联类别/作者/标签） + 标签 + 文章
--- media_key 存储中立：当前为 NAS 共享相对路径，将来可直接作为 OSS Object Key。
+-- 种子数据：博主 + 两类分类 + 真实视频（6 条，对应 MinIO bucket zhishu-video 根目录对象）+ 标签字典
+-- 视频的 blogger_id/category_id 暂为空，由运营更新；media_key 即对象 key（含中文名与 # 字符，S3 兼容）。
+-- 文章为补充内容种子。
 
 INSERT INTO blogger (id, name, avatar, introduction) VALUES
   (1, '李某某的AI课', 'https://placehold.co/200?text=AI%E8%AF%BE', '专注大模型工程化落地，热衷分享 RAG 实战'),
@@ -18,11 +19,18 @@ INSERT INTO category (id, name, cat_key, cat_type) VALUES
   (8, 'LLM入门指南', 'blogger_4', 'blogger');
 
 INSERT INTO video (id, title, blogger_id, category_id, cover, media_key, duration, hot_score, source_type, play_url) VALUES
-  (1, 'RAG全流程实战：从索引到生成', 1, 3, 'https://placehold.co/400x225?text=RAG', 'rag/rag-full-guide.mp4', 1520, 980, 'minio', NULL),
-  (2, '用Harness编排你的第一个Agent', 2, 1, 'https://placehold.co/400x225?text=Harness', 'harness/harness-agent.mp4', 860, 810, 'minio', NULL),
-  (3, 'MCP协议详解：工具即服务', 3, 2, 'https://placehold.co/400x225?text=MCP', 'mcp/mcp-tool-as-service.mp4', 1200, 760, 'minio', NULL),
-  (4, '大模型RAG问答的正确姿势', 4, 3, 'https://placehold.co/400x225?text=QA', 'rag/rag-qa-mistakes.mp4', 640, 920, 'minio', NULL),
-  (5, 'Harness控制台快速上手', 2, 1, 'https://placehold.co/400x225?text=Console', 'harness/harness-console.mp4', 500, 450, 'minio', NULL);
+  (1, 'AI最前沿的人，已经不聊模型了#aicoding #易论AI #归藏 #colaOS #李继刚', NULL, NULL, NULL,
+   'ai-frontier.mp4', 0, 0, 'minio', NULL),
+  (2, 'Harness Engineering 到底是什么？概念、实战与争议，一次全部讲清楚', NULL, NULL, NULL,
+   'harness-engineering-explained.mp4', 0, 0, 'minio', NULL),
+  (3, 'RAG 工作机制详解——一个高质量知识库背后的技术全流程', NULL, NULL, NULL,
+   'rag-workflow-deep-dive.mp4', 0, 0, 'minio', NULL),
+  (4, 'Token 到底是什么？—— 揭秘大模型背后的“文字压缩术”', NULL, NULL, NULL,
+   'what-is-token.mp4', 0, 0, 'minio', NULL),
+  (5, '如何使用第三方模型驱动 Codex（无需 OpenAI 账号）', NULL, NULL, NULL,
+   'drive-codex-thirdparty-models.mp4', 0, 0, 'minio', NULL),
+  (6, '我的 AI 编程全流程：如何使用 AI 稳定交付一个高质量的产品', NULL, NULL, NULL,
+   'my-ai-coding-workflow.mp4', 0, 0, 'minio', NULL);
 
 INSERT INTO tag (id, name) VALUES
   (1, 'RAG'),
@@ -32,13 +40,6 @@ INSERT INTO tag (id, name) VALUES
   (5, '工具调用'),
   (6, 'MCP'),
   (7, '提示词');
-
-INSERT INTO video_tag (video_id, tag_id) VALUES
-  (1, 1), (1, 2), (1, 3),
-  (2, 4), (2, 5),
-  (3, 6), (3, 5),
-  (4, 1), (4, 3),
-  (5, 4);
 
 INSERT INTO article (id, title, blogger_id, cover, content_url, category_key, hot_score) VALUES
   (1, '2026年做RAG，这些坑别再踩了', 1, 'https://placehold.co/400x225?text=Article', 'https://example.com/articles/rag-pits', 'rag', 880),
