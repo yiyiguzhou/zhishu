@@ -12,6 +12,8 @@ zhishu/
 └── mini/      原生微信小程序（WXML + JS）
 ```
 
+> 📖 更多文档见 [doc/ 文档中心](doc/README.md)：技术架构、业务架构、变更记录
+
 ## 核心设计
 
 - **视频来源抽象 `StreamSource`**：后端按 `zhishu.media.mode` 在 `local`/`minio`/`nas` 间切换

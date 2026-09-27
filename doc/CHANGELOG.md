@@ -16,6 +16,16 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-27 · 架构文档整理
+
+- 新增 `doc/architecture/technical-architecture.md`：三端架构总览、技术选型、后端分层、
+  StreamSource/Nacos/认证/Profile 关键设计、部署拓扑、API 总览、核心链路、工程保障
+- 新增 `doc/architecture/business-architecture.md`：产品定位、用户角色、业务模块、
+  注册/播放/收藏流程、信息架构、业务数据模型、运营约定、业务规划
+- 新增 `doc/README.md` 文档中心索引（`55ca4c4` 之后提交）
+
+---
+
 ## 2026-09-26 · 视频存储网关上线（tag: `media-minio-gateway`）
 
 **背景**：视频需要存放在 NAS 并可在线播放；架构决策为视频能力独立成"类 OSS 存储网关"，应用后端只做 S3 客户端。
