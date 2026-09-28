@@ -1,12 +1,19 @@
-# 线上编排：Nacos + 后端 + Nginx（Web 静态文件由宿主机目录挂载）
-# MySQL 推荐使用阿里云 RDS（内网地址）；确需同机 MySQL 时加 --profile local-mysql。
-# 用法：bash scripts/deploy/start.sh（或手动 docker compose -f deploy/docker-compose.prod.yml up -d --build）
+# 线上编排：Nacos + 后端（可多副本）+ Redis + Nginx（Web 静态文件由宿主机目录挂载）
+#
+# profile 说明（COMPOSE_PROFILES，默认 local-nacos,local-redis）：
+# - 单机：nacos/redis/mysql 均为本机容器
+# - HA：MySQL 用 RDS，Nacos 用 deploy/nacos/docker-compose.cluster.yml 集群或云托管，
+#   Redis 用云 Redis；此时 COMPOSE_PROFILES="" 只起 backend+nginx，
+#   并在 .env.prod 中把 NACOS_SERVER_ADDR_INTERNAL / REDIS_HOST_INTERNAL 指向云地址
+#
+# 用法：bash scripts/deploy/start.sh（BACKEND_REPLICAS=N 控制后端副本数）
 name: zhishu-prod
 
 services:
   nacos:
     image: nacos/nacos-server:v2.5.4
     container_name: zhishu-nacos
+    profiles: ["local-nacos"]
     environment:
       - MODE=standalone
       - NACOS_AUTH_ENABLE=true
@@ -21,19 +28,28 @@ services:
       - nacos-logs:/home/nacos/logs
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: zhishu-redis
+    profiles: ["local-redis"]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
   backend:
     build:
       context: ..
       dockerfile: deploy/backend/Dockerfile
     image: zhishu-backend:prod
-    container_name: zhishu-backend
-    depends_on:
-      - nacos
+    # 不设 container_name：支持 --scale backend=N 起多副本
     env_file:
       - .env.prod
     environment:
-      # 容器网络内直连 nacos，覆盖 .env.prod 中面向宿主机的地址
-      - NACOS_SERVER_ADDR=nacos:8848
+      # 容器网络内的默认地址，HA 时在 .env.prod 用 *_INTERNAL 变量改指云服务
+      - NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR_INTERNAL:-nacos:8848}
+      - REDIS_HOST=${REDIS_HOST_INTERNAL:-redis}
+      - REDIS_PORT=${REDIS_PORT_INTERNAL:-6379}
     restart: unless-stopped
 
   nginx:
@@ -50,7 +66,7 @@ services:
       - ./certs:/etc/nginx/certs:ro
     restart: unless-stopped
 
-  # 备选：同机 MySQL（仅在不使用 RDS 时启用：docker compose --profile local-mysql ...）
+  # 备选：同机 MySQL（仅不使用 RDS 时启用：COMPOSE_PROFILES 加 local-mysql）
   mysql:
     image: mysql:8.0
     container_name: zhishu-mysql
@@ -65,4 +81,5 @@ services:
 volumes:
   nacos-data:
   nacos-logs:
+  redis-data:
   mysql-data:
