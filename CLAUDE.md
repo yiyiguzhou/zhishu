@@ -6,7 +6,7 @@
 
 AI 学习内容的视频平台，三端结构（详见 README.md）：
 
-- `backend/` Spring Boot 3 (Java 17) + Spring Cloud Alibaba（Nacos 注册发现/配置中心）+ MyBatis-Plus + MySQL(默认，开发库 192.168.1.38:3306，root/root，库名 zhishu)/H2 内存库(`SPRING_PROFILES_ACTIVE=h2`) + JWT；表结构与种子数据在 `backend/src/main/resources/db/{schema,data}.sql`。MySQL 建库建表用 `bash scripts/init-mysql.sh`（应用自身不自动建表）。Nacos 开发环境在局域网 `192.168.1.38:8848`（账号 nacos/nacos，分组 `ZHISHU_GROUP`），不可用时不阻断启动；本机自建 Nacos 用 `deploy/nacos/docker-compose.yml`
+- `backend/` Spring Boot 3 (Java 17) + Spring Cloud Alibaba（Nacos 注册发现/配置中心）+ MyBatis-Plus + MySQL(默认，开发库 192.168.1.38:3306，root/root，库名 zhishu)/H2 内存库(`SPRING_PROFILES_ACTIVE=h2`) + JWT；表结构与种子数据在 `backend/src/main/resources/db/{schema,data}.sql`。视频经外键关联 category（类别）/blogger（作者），标签走 tag + video_tag。视频源默认 minio 模式：MinIO 在 192.168.1.38:9000（官方 minio/minio 已停发，使用逐行兼容的 pgsty/minio；数据目录为该网关机本机 `~/Documents/YouTube`，不依赖 NAS，MinIO 凭据用 `MINIO_ACCESS_KEY/SECRET_KEY` 环境变量注入）；nas 模式（后端本机直挂 NAS，脚本 `scripts/mount-nas.sh`）与 local 模式为备选。MySQL 建库建表用 `bash scripts/init-mysql.sh`（应用自身不自动建表）。Nacos 开发环境在局域网 `192.168.1.38:8848`（账号 nacos/nacos，分组 `ZHISHU_GROUP`），不可用时不阻断启动；本机自建 Nacos 用 `deploy/nacos/docker-compose.yml`。线上视频源将切阿里云 OSS，media_key 保持存储中立、新增 oss Resolver 即可
 - `web/` React 18 + TypeScript + Vite + Ant Design + Zustand
 - `mini/` 原生微信小程序（WXML + JS），无构建步骤，只能在微信开发者工具中验证
 
@@ -42,6 +42,7 @@ AI 学习内容的视频平台，三端结构（详见 README.md）：
 6. **修不好时**：保持改动未提交并如实报告卡在哪里，不要提交、不要用 reset/clean 清理现场，让用户决定。
 7. **不主动 push**，除非用户明确要求；不主动执行 `git push -f`、`git reset --hard`、`git clean` 等不可逆操作。
 8. 每次会话结束前，工作区应是干净的（改动已提交），或明确列出未提交内容及原因。
+9. **变更总结同步 `doc/CHANGELOG.md`**：每次提交上库时同步更新——小步提交在对应章节内追加要点与 sha，新功能/大改动先建章节（背景/变更内容/验证），合入 v1 前定稿；里程碑的 tag、环境拓扑变化也要记录。
 
 ## 回退指南（给用户）
 

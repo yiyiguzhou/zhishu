@@ -96,6 +96,7 @@ export default function Detail() {
       <Card>
         <video
           key={detail.playUrl}
+          src={detail.playUrl}
           controls
           autoPlay
           preload="metadata"
@@ -110,7 +111,10 @@ export default function Detail() {
             <Tag icon={<VideoCameraOutlined />} color="blue">
               {formatDuration(detail.duration)}
             </Tag>
-            {detail.categoryKey && <Tag color="geekblue">{detail.categoryKey}</Tag>}
+            {detail.categoryName && <Tag color="geekblue">{detail.categoryName}</Tag>}
+            {detail.tags?.map((t) => (
+              <Tag key={t}>{t}</Tag>
+            ))}
           </Space>
         </div>
       </Card>

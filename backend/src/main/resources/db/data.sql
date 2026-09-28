@@ -1,5 +1,6 @@
--- 演示种子数据：博主 + 两类分类 + 视频 + 文章
--- play_url 为 local 模式的占位直链；接入 NAS/MinIO 后由 StreamSource 解析替换。
+-- 种子数据：博主 + 两类分类 + 真实视频（6 条，对应 MinIO bucket zhishu-video 根目录对象）+ 标签字典
+-- 视频的 blogger_id/category_id 暂为空，由运营更新；media_key 即对象 key（含中文名与 # 字符，S3 兼容）。
+-- 文章为补充内容种子。
 
 INSERT INTO blogger (id, name, avatar, introduction) VALUES
   (1, '李某某的AI课', 'https://placehold.co/200?text=AI%E8%AF%BE', '专注大模型工程化落地，热衷分享 RAG 实战'),
@@ -12,17 +13,37 @@ INSERT INTO category (id, name, cat_key, cat_type) VALUES
   (2, 'MCP协议', 'mcp', 'video_tech'),
   (3, 'RAG检索', 'rag', 'video_tech'),
   (4, '提示词工程', 'prompt', 'video_tech'),
+  (9, 'AI编程', 'ai-coding', 'video_tech'),
+  (10, 'AI动态', 'ai-trends', 'video_tech'),
+  (11, '基础概念', 'fundamentals', 'video_tech'),
   (5, '李某某的AI课', 'blogger_1', 'blogger'),
   (6, 'Harness实验室', 'blogger_2', 'blogger'),
   (7, 'MCP研究所', 'blogger_3', 'blogger'),
   (8, 'LLM入门指南', 'blogger_4', 'blogger');
 
-INSERT INTO video (id, title, blogger_id, cover, media_key, duration, category_key, hot_score, source_type, play_url) VALUES
-  (1, 'RAG全流程实战：从索引到生成', 1, 'https://placehold.co/400x225?text=RAG', 'rag/rag-full-guide.mp4', 1520, 'rag', 980, 'local', '/media/videos/rag-full-guide.mp4'),
-  (2, '用Harness编排你的第一个Agent', 2, 'https://placehold.co/400x225?text=Harness', 'harness/harness-agent.mp4', 860, 'harness', 810, 'local', '/media/videos/harness-agent.mp4'),
-  (3, 'MCP协议详解：工具即服务', 3, 'https://placehold.co/400x225?text=MCP', 'mcp/mcp-tool-as-service.mp4', 1200, 'mcp', 760, 'local', '/media/videos/mcp-tool-as-service.mp4'),
-  (4, '大模型RAG问答的正确姿势', 4, 'https://placehold.co/400x225?text=QA', 'rag/rag-qa-mistakes.mp4', 640, 'rag', 920, 'local', '/media/videos/rag-qa-mistakes.mp4'),
-  (5, 'Harness控制台快速上手', 2, 'https://placehold.co/400x225?text=Console', 'harness/harness-console.mp4', 500, 'harness', 450, 'local', '/media/videos/harness-console.mp4');
+-- 封面：bucket covers/ 前缀（anonymous download，免登录展示）；地址用网关绝对路径。
+INSERT INTO video (id, title, blogger_id, category_id, cover, media_key, duration, hot_score, source_type, play_url) VALUES
+  (1, 'AI最前沿的人，已经不聊模型了#aicoding #易论AI #归藏 #colaOS #李继刚', NULL, 10,
+   'http://192.168.1.38:9000/zhishu-video/covers/ai-frontier.jpg', 'ai-frontier.mp4', 0, 0, 'minio', NULL),
+  (2, 'Harness Engineering 到底是什么？概念、实战与争议，一次全部讲清楚', NULL, 1,
+   'http://192.168.1.38:9000/zhishu-video/covers/harness-engineering-explained.jpg', 'harness-engineering-explained.mp4', 0, 0, 'minio', NULL),
+  (3, 'RAG 工作机制详解——一个高质量知识库背后的技术全流程', NULL, 3,
+   'http://192.168.1.38:9000/zhishu-video/covers/rag-workflow-deep-dive.jpg', 'rag-workflow-deep-dive.mp4', 0, 0, 'minio', NULL),
+  (4, 'Token 到底是什么？—— 揭秘大模型背后的“文字压缩术”', NULL, 11,
+   'http://192.168.1.38:9000/zhishu-video/covers/what-is-token.jpg', 'what-is-token.mp4', 0, 0, 'minio', NULL),
+  (5, '如何使用第三方模型驱动 Codex（无需 OpenAI 账号）', NULL, 9,
+   'http://192.168.1.38:9000/zhishu-video/covers/drive-codex-thirdparty-models.jpg', 'drive-codex-thirdparty-models.mp4', 0, 0, 'minio', NULL),
+  (6, '我的 AI 编程全流程：如何使用 AI 稳定交付一个高质量的产品', NULL, 9,
+   'http://192.168.1.38:9000/zhishu-video/covers/my-ai-coding-workflow.jpg', 'my-ai-coding-workflow.mp4', 0, 0, 'minio', NULL);
+
+INSERT INTO tag (id, name) VALUES
+  (1, 'RAG'),
+  (2, '向量数据库'),
+  (3, 'Embedding'),
+  (4, 'Agent'),
+  (5, '工具调用'),
+  (6, 'MCP'),
+  (7, '提示词');
 
 INSERT INTO article (id, title, blogger_id, cover, content_url, category_key, hot_score) VALUES
   (1, '2026年做RAG，这些坑别再踩了', 1, 'https://placehold.co/400x225?text=Article', 'https://example.com/articles/rag-pits', 'rag', 880),

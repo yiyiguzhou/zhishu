@@ -2,6 +2,7 @@ import { Outlet, Link, useNavigate } from "react-router-dom";
 import { Layout, Menu, Button, Space, Dropdown } from "antd";
 import { UserOutlined, HomeOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useAuth } from "../store/auth";
+import ChatAssistant from "../components/ChatAssistant";
 
 const { Header, Content } = Layout;
 
@@ -48,6 +49,7 @@ export default function MainLayout() {
           <Outlet />
         </div>
       </Content>
+      <ChatAssistant />
     </Layout>
   );
 }

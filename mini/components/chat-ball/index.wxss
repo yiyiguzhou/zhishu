@@ -1,0 +1,16 @@
+.chat-ball {
+  position: fixed;
+  right: 28rpx;
+  bottom: 140rpx;
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: #1677ff;
+  color: #fff;
+  font-size: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(22, 119, 255, 0.4);
+  z-index: 999;
+}

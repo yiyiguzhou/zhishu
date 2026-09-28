@@ -11,4 +11,5 @@
     </view>
   </view>
   <view wx:if="{{loading}}" class="empty">加载中...</view>
+  <chat-ball />
 </view>

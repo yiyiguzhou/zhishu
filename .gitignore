@@ -18,3 +18,9 @@ web/tsconfig.tsbuildinfo
 
 # --- runtime ---
 /tmp/
+
+# --- 网关凭据（MinIO 管理员密码等） ---
+deploy/minio/.env
+
+# --- 微信开发者工具本机私有配置 ---
+mini/project.private.config.json

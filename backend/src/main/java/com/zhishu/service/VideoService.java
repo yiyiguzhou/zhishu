@@ -4,13 +4,23 @@ import com.zhishu.common.BusinessException;
 import com.zhishu.common.UserContext;
 import com.zhishu.dto.VideoDetailDTO;
 import com.zhishu.entity.Blogger;
+import com.zhishu.entity.Category;
+import com.zhishu.entity.Tag;
 import com.zhishu.entity.Video;
+import com.zhishu.entity.VideoTag;
 import com.zhishu.mapper.BloggerMapper;
+import com.zhishu.mapper.CategoryMapper;
 import com.zhishu.mapper.FavoriteMapper;
+import com.zhishu.mapper.TagMapper;
 import com.zhishu.mapper.VideoMapper;
+import com.zhishu.mapper.VideoTagMapper;
 import com.zhishu.service.media.StreamSource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 播放详情页数据组装。favorited 依赖当前登录态（未登录返回 false）。
@@ -21,6 +31,9 @@ public class VideoService {
 
     private final VideoMapper videoMapper;
     private final BloggerMapper bloggerMapper;
+    private final CategoryMapper categoryMapper;
+    private final TagMapper tagMapper;
+    private final VideoTagMapper videoTagMapper;
     private final FavoriteMapper favoriteMapper;
     private final StreamSource streamSource;
 
@@ -30,13 +43,16 @@ public class VideoService {
             throw new BusinessException(404, "视频不存在");
         }
         Blogger blogger = video.getBloggerId() == null ? null : bloggerMapper.selectById(video.getBloggerId());
+        Category category = video.getCategoryId() == null ? null : categoryMapper.selectById(video.getCategoryId());
 
         VideoDetailDTO dto = new VideoDetailDTO();
         dto.setId(video.getId());
         dto.setTitle(video.getTitle());
         dto.setCover(video.getCover());
         dto.setDuration(video.getDuration());
-        dto.setCategoryKey(video.getCategoryKey());
+        dto.setCategoryId(video.getCategoryId());
+        dto.setCategoryName(category != null ? category.getName() : null);
+        dto.setTags(tagNames(id));
         dto.setBloggerId(video.getBloggerId());
         dto.setAuthorName(blogger != null ? blogger.getName() : null);
         dto.setAuthorAvatar(blogger != null ? blogger.getAvatar() : null);
@@ -44,6 +60,17 @@ public class VideoService {
         dto.setFavorited(isFavorited(id));
         dto.setFavoriteCount(favoriteCount(id));
         return dto;
+    }
+
+    private List<String> tagNames(Long videoId) {
+        List<VideoTag> links = videoTagMapper.selectList(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<VideoTag>()
+                        .eq(VideoTag::getVideoId, videoId));
+        if (links.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Long> tagIds = links.stream().map(VideoTag::getTagId).collect(Collectors.toList());
+        return tagMapper.selectBatchIds(tagIds).stream().map(Tag::getName).collect(Collectors.toList());
     }
 
     private boolean isFavorited(Long videoId) {

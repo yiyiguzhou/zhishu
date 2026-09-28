@@ -1,1 +1,6 @@
-{ "navigationBarTitleText": "视频详情" }
+{
+  "navigationBarTitleText": "视频详情",
+  "usingComponents": {
+    "chat-ball": "/components/chat-ball/index"
+  }
+}

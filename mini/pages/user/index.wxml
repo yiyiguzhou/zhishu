@@ -30,4 +30,5 @@
 
     <button class="btn ghost" bindtap="logout">退出登录</button>
   </view>
+  <chat-ball />
 </view>

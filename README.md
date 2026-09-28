@@ -12,10 +12,14 @@ zhishu/
 └── mini/      原生微信小程序（WXML + JS）
 ```
 
+> 📖 更多文档见 [doc/ 文档中心](doc/README.md)：技术架构、业务架构、变更记录
+
 ## 核心设计
 
-- **视频来源抽象 `StreamSource`**：后端可按 `zhishu.media.mode` 在 `local`(默认)/`minio` 间切换，
-  接入 NAS / Jellyfin / Plex 直链只需新增一个 Resolver。
+- **视频来源抽象 `StreamSource`**：后端按 `zhishu.media.mode` 在 `local`/`minio`/`nas` 间切换
+  （线上预留 `oss`）；接入 NAS/Jellyfin/Plex/OSS 只需新增一个 Resolver。
+- **视频元数据模型**：video 经 `category_id` 外键关联 `category`（视频类别）、
+  `blogger_id` 关联 `blogger`（作者），标签走 `tag` + `video_tag` 多对多。
 - **两种分类共用 category 表**：按技术(`video_tech`，harness/mcp/rag…) 或按博主(`blogger`)。
 - **认证**：小程序微信快速登录(`wx.login`→openid)；Web 手机号+验证码（开发期占位码 `123456`）。
 
@@ -33,17 +37,58 @@ zhishu/
   `NACOS_SERVER_ADDR`（如 `127.0.0.1:8848`）、`NACOS_USERNAME`、`NACOS_PASSWORD`
 - Nacos 暂时连不上不阻断后端启动（`fail-fast=false`，恢复后自动重连并重新注册）
 
+## 视频存储网关（MinIO）
+
+视频文件统一由独立网关机（`192.168.1.38`）上的 MinIO 管理，数据目录是该 Mac 本机磁盘上的
+`~/Documents/YouTube`（**本地调试不依赖 NAS**）；zhishu 后端只是 S3 客户端，
+解析出预签名播放 URL，播放器直连网关。
+
+> MinIO 官方开源镜像 2025-10 起停发并从 Docker Hub 下架，现使用逐行兼容的社区分支
+> **pgsty/minio**（server 命令、环境变量、`.minio.sys` 磁盘格式、Web 控制台完全一致）。
+
+```
+~/Documents/YouTube ─bind─▶ pgsty/minio(:9000 API / :9001 控制台)
+zhishu-backend(.175, mode=minio) ─预签名URL─▶ Web/小程序播放器直连 .38:9000
+```
+
+**网关机 .38 部署（工件在 `deploy/minio/`）**
+```bash
+cp deploy/minio/.env.example deploy/minio/.env   # MinIO 管理员（密码 >=8 位）
+docker compose -f deploy/minio/docker-compose.yml up -d
+# 首次绑定 ~/Documents 时 macOS 会弹隐私授权，请在网关机屏幕上允许
+# 控制台 http://192.168.1.38:9001 ，bucket：zhishu-video
+```
+
+**应用服务器 .175**：启动时注入网关凭据（不入库）：
+`MINIO_ENDPOINT`（默认已指向 .38）、`MINIO_ACCESS_KEY`、`MINIO_SECRET_KEY`、`MINIO_BUCKET`(默认 zhishu-video)
+
+- 对象经 S3 API/9001 控制台上传；浏览器播放要求 MP4/H.264/AAC
+- 视频模式按 `zhishu.media.mode` 切换：`minio`(默认，网关) / `nas`(后端本机直挂 NAS，脚本 `scripts/`) / `local`
+- 上阿里云 OSS 时 media_key 直接复用为 Object Key，仅需改 endpoint/凭据并新增 oss Resolver
+
+## 大模型学习助手
+
+全站答疑 Agent（仅登录用户可用）：Web 右下角悬浮按钮打开聊天窗（SSE 打字机输出）；
+小程序悬浮球进入独立 chat 页（整体返回）。
+
+- **模型**：火山方舟 OpenAI 兼容接口，默认 `deepseek-v4-flash-260425`（`ARK_MODEL` 可覆盖）
+- **密钥**：配置在 Nacos（ZHISHU_GROUP）`zhishu-backend.yaml` 的 `spring.ai.openai.api-key`，
+  不写入代码库；应用 `zhishu.assistant.api-key` 经该属性注入
+- 接口：`POST /api/assistant/chat`（SSE 流式）、`POST /api/assistant/chat/sync`（整体返回）
+- 多轮对话历史由客户端持有、随请求上送；系统提示词固化在 AssistantService
+
 ## 运行
 
-### 后端（默认 MySQL，数据持久化）
+### 后端（默认 MySQL + MinIO 网关，数据持久化）
 ```bash
-# 首次：在 MySQL（默认 192.168.1.38，与 Nacos 同机，root/root）建库建表灌种子
+# 环境首次：在 MySQL（默认 192.168.1.38，root/root）建库建表灌种子
 bash scripts/init-mysql.sh
-# 启动（端口 8080）
+# 启动（端口 8080）；MinIO 网关需已在 .38 运行，凭据走环境变量
 cd backend
-JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
-# MySQL 地址/账号可用环境变量覆盖：MYSQL_HOST、MYSQL_USER、MYSQL_PASSWORD、MYSQL_DB
-# 不想依赖远程库时：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
+MINIO_ACCESS_KEY=xxxx MINIO_SECRET_KEY=xxxx \
+  JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
+# MySQL：MYSQL_HOST/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DB
+# 不想依赖远程环境：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
 ```
 
 ### Web
@@ -68,6 +113,6 @@ npm install && npm run dev        # 端口 5173，/api 代理到 8080
 
 ## 后续规划（骨架已预留）
 - 真实短信服务替换 MockSmsService
-- NAS/Jellyfin/Plex 直链 Resolver
+- 线上阿里云 OSS 视频源（OssMediaResolver，凭据走 Nacos）
 - 视频转码/封面、点赞评论、搜索、推荐
 - 生产 MyBatis 迁移(Flyway)、小程序真实AppID code2session
