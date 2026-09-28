@@ -45,6 +45,11 @@ zhishu:
       host: ${NAS_IP:192.168.1.2}
       share: ${NAS_SHARE:zhishu-video}
       mount-dir: ${NAS_MOUNT_DIR:${user.home}/mnt/zhishu-video}
+  # 大模型学习助手（火山方舟，OpenAI 兼容接口；密钥经 Nacos zhishu-backend.yaml 注入）
+  assistant:
+    api-key: ${spring.ai.openai.api-key:}
+    base-url: ${ARK_BASE_URL:https://ark.cn-beijing.volces.com/api/v3}
+    model: ${ARK_MODEL:deepseek-v4-flash-260425}
   wx:
     # 微信小程序 code2session 占位配置；骨架模式 WX_APPID/SECRET 为空时返回 mock openid
     app-id: ""

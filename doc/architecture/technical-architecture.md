@@ -44,6 +44,7 @@
 | 网关数据目录 | 本机磁盘 | — | `~/Documents/YouTube`（macOS 需 TCC 授权） |
 | 物理存储（可选） | WD My Cloud EX2 Ultra | — | NAS；本地调试当前不使用 |
 | 认证 | JWT (jjwt) | 0.12.6 | 无状态 Token，有效期 7 天 |
+| 学习助手 | 火山方舟（OpenAI 兼容） | deepseek-v4-flash-260425 | 大模型答疑，RestClient 调用；密钥经 Nacos 注入 |
 | Web | React + TypeScript | 18 / Vite 5 | Ant Design 5 组件库、Zustand 状态管理 |
 | 小程序 | 原生微信小程序 | — | WXML/WXSS/JS，无构建步骤 |
 
@@ -108,7 +109,15 @@ public interface StreamSource {
 - JWT 经 `Authorization` 请求头传递；密钥/有效期配置在 `zhishu.jwt`
 - `/media/**` 不在鉴权拦截范围（静态资源免登录）
 
-### 4.4 数据访问与环境 Profile
+### 4.4 大模型学习助手
+
+- `POST /api/assistant/chat`（SSE 流式，Web 悬浮聊天窗）与 `/chat/sync`（整体返回，小程序 chat 页）
+- 仅登录用户可用（`UserContext.require()`）；系统提示词固化在 AssistantService；多轮历史由客户端上送
+- 使用 Boot 自带 RestClient 调用火山方舟 chat completions，无新增依赖；
+  密钥 `spring.ai.openai.api-key` 配置在 Nacos ZHISHU_GROUP `zhishu-backend.yaml`
+- 不引入 Spring AI：其 1.0 基线为 Boot 3.4，会连锁牵动 Spring Cloud/SCA 升级
+
+### 4.5 数据访问与环境 Profile
 
 | Profile | 数据库 | 表结构来源 |
 |---|---|---|
@@ -133,7 +142,9 @@ public interface StreamSource {
 |---|---|
 | 认证 | `POST /api/auth/sms-code` · `register` · `login` · `wechat-login` |
 | 内容 | `GET /api/hot` · `/api/categories` · `/api/categories/{key}/videos` · `/api/bloggers` · `/api/bloggers/{id}/videos` |
+| 用户 | 认证 |
 | 视频 | `GET /api/videos/{id}` · `/api/videos/{id}/stream` |
+| 学习助手 | `POST /api/assistant/chat`(SSE) · `/api/assistant/chat/sync` |
 | 用户 | `GET /api/user/profile` |
 | 收藏 | `GET/POST /api/user/favorites` · `DELETE /api/user/favorites/{type}/{id}` |
 | 历史 | `GET /api/user/history` · `POST /api/user/history` |

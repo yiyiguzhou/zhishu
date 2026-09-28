@@ -66,6 +66,17 @@ docker compose -f deploy/minio/docker-compose.yml up -d
 - 视频模式按 `zhishu.media.mode` 切换：`minio`(默认，网关) / `nas`(后端本机直挂 NAS，脚本 `scripts/`) / `local`
 - 上阿里云 OSS 时 media_key 直接复用为 Object Key，仅需改 endpoint/凭据并新增 oss Resolver
 
+## 大模型学习助手
+
+全站答疑 Agent（仅登录用户可用）：Web 右下角悬浮按钮打开聊天窗（SSE 打字机输出）；
+小程序悬浮球进入独立 chat 页（整体返回）。
+
+- **模型**：火山方舟 OpenAI 兼容接口，默认 `deepseek-v4-flash-260425`（`ARK_MODEL` 可覆盖）
+- **密钥**：配置在 Nacos（ZHISHU_GROUP）`zhishu-backend.yaml` 的 `spring.ai.openai.api-key`，
+  不写入代码库；应用 `zhishu.assistant.api-key` 经该属性注入
+- 接口：`POST /api/assistant/chat`（SSE 流式）、`POST /api/assistant/chat/sync`（整体返回）
+- 多轮对话历史由客户端持有、随请求上送；系统提示词固化在 AssistantService
+
 ## 运行
 
 ### 后端（默认 MySQL + MinIO 网关，数据持久化）

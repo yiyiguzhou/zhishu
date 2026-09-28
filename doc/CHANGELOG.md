@@ -12,9 +12,22 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 | 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos 2.5.4、MinIO（数据目录本机 `~/Documents/YouTube`） |
 | NAS（可选，当前不使用） | 192.168.1.2 | WD My Cloud EX2 Ultra |
 
-**里程碑 Tags**：`baseline-skeleton`（骨架基线）→ `arch-nacos`（Nacos）→ `data-mysql`（MySQL）→ `media-minio-gateway`（视频网关）
+**里程碑 Tags**：`baseline-skeleton`（骨架基线）→ `arch-nacos`（Nacos）→ `data-mysql`（MySQL）→ `media-minio-gateway`（视频网关）→ `feature-learning-assistant`（学习助手）
 
 ---
+
+## 2026-09-28 · 大模型学习助手上线（tag: feature-learning-assistant）
+
+- **后端**：`/api/assistant/chat`（SSE 流式）与 `/chat/sync`（整体返回）；
+  登录强制校验、系统提示词、客户端多轮历史；RestClient 调火山方舟，无新增依赖
+- **Web**：FloatButton 悬浮聊天窗（打字机、可停止、多轮上下文），全站挂载
+- **小程序**：pages/chat + chat-ball 组件（五个页面注册）
+- **模型/密钥最终方案**：模型 deepseek-v4-flash-260425；Ark key 配置在 Nacos ZHISHU_GROUP
+  `zhishu-backend.yaml` 的 `spring.ai.openai.api-key`（单等号），不入库；
+  不再使用 DEFAULT_GROUP 的 nanny-monitor-api-key.properties
+- 排障记录：properties 双等号会使注入值带前导 =（Ark 报格式错误）；
+  旧 key（46 位 ark-dc0e…）火山侧已失效，换新 key 后调通
+- 验证：SSE 增量、sync 完整回复、未登录 401 全部实测通过
 
 ## 2026-09-27 · 视频首帧自动生成封面
 
