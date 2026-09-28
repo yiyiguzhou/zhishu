@@ -8,12 +8,13 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "zhishu.media")
 public class MediaProperties {
-    /** local | minio | nas（线上 OSS 时扩展 oss） */
+    /** local | minio | oss | nas（线上推荐 oss） */
     private String mode = "local";
     private String localDir = "./media";
 
     private Nas nas = new Nas();
     private Minio minio = new Minio();
+    private Oss oss = new Oss();
 
     @Data
     public static class Nas {
@@ -27,6 +28,15 @@ public class MediaProperties {
 
     @Data
     public static class Minio {
+        private String endpoint;
+        private String accessKey;
+        private String secretKey;
+        private String bucket;
+    }
+
+    @Data
+    public static class Oss {
+        /** 对外访问 endpoint（含 scheme）；绑 CDN/自定义域名时填该域名，须与客户端实际访问地址一致 */
         private String endpoint;
         private String accessKey;
         private String secretKey;

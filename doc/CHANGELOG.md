@@ -9,10 +9,39 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 | 角色 | 地址 | 说明 |
 |---|---|---|
 | 应用服务器（后端/Web） | 192.168.1.175 | macOS，Spring Boot + React |
-| 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos 2.5.4、MinIO（数据目录本机 `~/Documents/YouTube`） |
+| 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos 2.5.4、MinIO（数据目录本机 `~/Documents/YouTube`）、Redis 7（AOF，供验证码等共享状态） |
 | NAS（可选，当前不使用） | 192.168.1.2 | WD My Cloud EX2 Ultra |
 
 **里程碑 Tags**：`baseline-skeleton`（骨架基线）→ `arch-nacos`（Nacos）→ `data-mysql`（MySQL）→ `media-minio-gateway`（视频网关）→ `feature-learning-assistant`（学习助手）
+
+---
+
+## 2026-09-28 · 线上部署改造（分支 feat/prod-deploy，合入 v1 前定稿）
+
+**背景**：平台准备上线阿里云，目标拓扑为 ECS（Nginx + 后端 + Nacos 容器）+ RDS MySQL + OSS 视频源，域名 ICP 备案后对公网仅暴露 80/443。
+
+**变更内容**：
+
+- 后端新增 **oss 视频源**：`OssMediaResolver` 对私有 bucket 生成 2 小时预签名 URL，客户端直连 OSS，视频流量不过后端；media_key 存储中立可原样迁移；`MEDIA_MODE=oss` 启用（57fe578）
+- 生产配置全部环境变量化：`JWT_SECRET/WX_APP_ID/WX_SECRET/LOG_LEVEL/MEDIA_MODE/OSS_*`，本地默认值保持开发行为不变（49510ae）
+- 部署编排：`deploy/backend/Dockerfile`（多阶段）、`deploy/docker-compose.prod.yml`（nacos+后端+nginx，MySQL 外接 RDS，另备 local-mysql profile）、`deploy/nginx/nginx.conf`（SPA、/api 反代、SSE 关 buffering、HTTP 跳 HTTPS）、`.env.prod.example`（eda66e4）
+- 启动脚本 `scripts/deploy/`：`start.sh`（校验→构建 Web→镜像→起服务）、`stop/restart/logs.sh`、`init-remote-db.sh`（支持 RDS 与容器库）（4a845e4）
+- 小程序 `baseUrl` 切换线上域名占位 `https://your-domain.com`（208a21a）
+- 部署文档 `doc/DEPLOY.md`
+
+**验证**：JDK17 `mvn compile` 通过（含 OSS SDK 依赖下载）；YAML 解析校验；脚本 `bash -n`；小程序 `node --check`。Web 无源码改动。**实际部署/真机与小程序 WXML 行为待 ECS 环境与微信开发者工具验证**。
+
+**阶段一 · 高可用集群改造（同日追加）**，目标无单点：后端无状态多副本 + Nacos 集群 + RDS 高可用 + 云 Redis + SLB：
+
+- 验证码改存 Redis（StringRedisTemplate，5 分钟过期），多实例共享发码/校验（7578711）
+- 引入 actuator：`/actuator/health` 及 liveness/readiness 子探针；优雅停机 30s 宽限（c0b82ca）
+- 编排支持 `--scale backend=N`：compose 加 redis 持久化、Nacos/Redis/MySQL 改 profile、
+  Nginx 经 Docker DNS 动态解析后端；common.sh 统一 compose `--env-file` 插值（f33a040）
+- Nacos 三节点集群编排（独立 MySQL 存 nacos_config，建表 SQL 从镜像提取，不入库）（87bff88）
+- `doc/DEPLOY.md` 第 10 节：集群资源规划、Nacos 集群、应用 ECS 配置、SLB、验证与演进
+- 验证：mvn compile、YAML、bash -n 通过；**实际故障切换/扩缩容行为待云上验证**
+- 开发环境配套：.38 上新增 `zhishu-redis` 容器（redis:7-alpine，AOF，命名卷
+  zhishu-redis-data，6379，无密码与开发默认值一致），本机实测 PING→PONG
 
 ---
 
