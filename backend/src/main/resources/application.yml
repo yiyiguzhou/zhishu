@@ -22,6 +22,8 @@ spring:
     import:
       - optional:nacos:zhishu-backend.yaml
       - optional:nacos:zhishu-backend-${spring.profiles.active}.yaml
+      # 大模型学习助手专属密钥（该配置在 DEFAULT_GROUP）
+      - optional:nacos:nanny-monitor-api-key.properties?group=DEFAULT_GROUP
 
 # 业务自定义配置
 zhishu:
@@ -45,6 +47,11 @@ zhishu:
       host: ${NAS_IP:192.168.1.2}
       share: ${NAS_SHARE:zhishu-video}
       mount-dir: ${NAS_MOUNT_DIR:${user.home}/mnt/zhishu-video}
+  # 大模型学习助手（火山方舟，OpenAI 兼容接口；密钥来自 Nacos spring.ai.openai.api-key）
+  assistant:
+    api-key: ${spring.ai.openai.api-key:}
+    base-url: ${ARK_BASE_URL:https://ark.cn-beijing.volces.com/api/v3}
+    model: ${ARK_MODEL:doubao-seed-2-1-lite-260915}
   wx:
     # 微信小程序 code2session 占位配置；骨架模式 WX_APPID/SECRET 为空时返回 mock openid
     app-id: ""
