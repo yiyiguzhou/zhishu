@@ -31,7 +31,7 @@ zhishu:
     expire-hours: 168
   media:
     # local | minio | oss | nas —— 视频流来源模式（线上推荐 oss）
-    mode: minio
+    mode: ${MEDIA_MODE:minio}
     # local 模式：视频根目录
     local-dir: ./media
     # minio 模式：视频存储网关（MinIO 在 192.168.1.38，NAS 由该网关挂载）

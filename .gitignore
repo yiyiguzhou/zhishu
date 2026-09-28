@@ -22,5 +22,10 @@ web/tsconfig.tsbuildinfo
 # --- 网关凭据（MinIO 管理员密码等） ---
 deploy/minio/.env
 
+# --- 线上部署凭据/产物（.example 模板照常入库） ---
+deploy/.env.prod
+deploy/certs/
+deploy/web-dist/
+
 # --- 微信开发者工具本机私有配置 ---
 mini/project.private.config.json

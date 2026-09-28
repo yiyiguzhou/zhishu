@@ -1,0 +1,13 @@
+# Docker 构建上下文（仓库根目录）忽略项
+.git
+.claude
+**/node_modules
+**/target
+**/dist
+web
+mini
+doc
+scripts
+deploy/web-dist
+deploy/certs
+**/.DS_Store
