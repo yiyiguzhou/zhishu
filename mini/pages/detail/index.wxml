@@ -30,4 +30,5 @@
       <text class="tag-chip" wx:for="{{detail.tags}}" wx:key="*this">#{{item}}</text>
     </view>
   </view>
+  <chat-ball />
 </view>

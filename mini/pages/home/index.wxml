@@ -44,4 +44,7 @@
     </view>
     <view wx:if="{{loading}}" class="loading">加载中...</view>
   </view>
+
+  <!-- 大模型学习助手入口 -->
+  <chat-ball />
 </view>
