@@ -26,8 +26,8 @@ spring:
 # 业务自定义配置
 zhishu:
   jwt:
-    # 骨架阶段硬编码密钥占位，生产应从环境变量注入
-    secret: "zhishu-skeleton-jwt-secret-please-change-in-prod-0123456789"
+    # 线上必须经 JWT_SECRET 环境变量（或 Nacos）注入；未注入时仅为开发占位值
+    secret: ${JWT_SECRET:zhishu-skeleton-jwt-secret-please-change-in-prod-0123456789}
     expire-hours: 168
   media:
     # local | minio | oss | nas —— 视频流来源模式（线上推荐 oss）
@@ -57,9 +57,9 @@ zhishu:
     base-url: ${ARK_BASE_URL:https://ark.cn-beijing.volces.com/api/v3}
     model: ${ARK_MODEL:deepseek-v4-flash-260425}
   wx:
-    # 微信小程序 code2session 占位配置；骨架模式 WX_APPID/SECRET 为空时返回 mock openid
-    app-id: ""
-    secret: ""
+    # 微信小程序 code2session；线上经 WX_APP_ID/WX_SECRET 注入，为空时返回 mock openid
+    app-id: ${WX_APP_ID:}
+    secret: ${WX_SECRET:}
 
 mybatis-plus:
   configuration:
@@ -68,7 +68,7 @@ mybatis-plus:
 
 logging:
   level:
-    com.zhishu: debug
+    com.zhishu: ${LOG_LEVEL:debug}    # 线上设 LOG_LEVEL=info
 
 server:
   port: 8080
