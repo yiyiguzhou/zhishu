@@ -1,0 +1,30 @@
+<view class="chat-page">
+  <scroll-view class="msg-list" scroll-y scroll-top="{{scrollTop}}" scroll-with-animation>
+    <view
+      wx:for="{{messages}}"
+      wx:key="index"
+      class="msg-row {{item.role==='user' ? 'msg-user' : 'msg-ai'}}"
+    >
+      <view class="bubble {{item.role}}">
+        <block wx:if="{{item.role==='assistant' && sending && index===messages.length-1 && !item.content}}">
+          正在输入…
+        </block>
+        <block wx:else>{{item.content}}</block>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="input-bar">
+    <input
+      class="input"
+      value="{{input}}"
+      placeholder="输入你的问题…"
+      confirm-type="send"
+      bindinput="onInput"
+      bindconfirm="send"
+    />
+    <button class="send-btn" type="primary" size="mini" loading="{{sending}}" bindtap="send">
+      发送
+    </button>
+  </view>
+</view>

@@ -1,1 +1,6 @@
-{ "navigationBarTitleText": "浏览历史" }
+{
+  "navigationBarTitleText": "浏览历史",
+  "usingComponents": {
+    "chat-ball": "/components/chat-ball/index"
+  }
+}

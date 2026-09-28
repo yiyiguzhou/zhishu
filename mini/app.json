@@ -5,7 +5,8 @@
     "pages/login/index",
     "pages/user/index",
     "pages/history/index",
-    "pages/favorites/index"
+    "pages/favorites/index",
+    "pages/chat/index"
   ],
   "window": {
     "navigationBarBackgroundColor": "#ffffff",

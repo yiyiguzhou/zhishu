@@ -39,6 +39,7 @@ module.exports = {
   addFavorite: (targetId) => request.post("/api/user/favorites", { targetType: "video", targetId }),
   history: () => request.get("/api/user/history"),
   addHistory: (targetId) => request.post("/api/user/history", { targetType: "video", targetId, watchedProgress: 0 }),
+  assistantChat: (data) => request.post("/api/assistant/chat/sync", data),
   quickLogin,
   getUser,
   logout
