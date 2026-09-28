@@ -16,6 +16,23 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-28 · 线上部署改造（分支 feat/prod-deploy，合入 v1 前定稿）
+
+**背景**：平台准备上线阿里云，目标拓扑为 ECS（Nginx + 后端 + Nacos 容器）+ RDS MySQL + OSS 视频源，域名 ICP 备案后对公网仅暴露 80/443。
+
+**变更内容**：
+
+- 后端新增 **oss 视频源**：`OssMediaResolver` 对私有 bucket 生成 2 小时预签名 URL，客户端直连 OSS，视频流量不过后端；media_key 存储中立可原样迁移；`MEDIA_MODE=oss` 启用（57fe578）
+- 生产配置全部环境变量化：`JWT_SECRET/WX_APP_ID/WX_SECRET/LOG_LEVEL/MEDIA_MODE/OSS_*`，本地默认值保持开发行为不变（49510ae）
+- 部署编排：`deploy/backend/Dockerfile`（多阶段）、`deploy/docker-compose.prod.yml`（nacos+后端+nginx，MySQL 外接 RDS，另备 local-mysql profile）、`deploy/nginx/nginx.conf`（SPA、/api 反代、SSE 关 buffering、HTTP 跳 HTTPS）、`.env.prod.example`（eda66e4）
+- 启动脚本 `scripts/deploy/`：`start.sh`（校验→构建 Web→镜像→起服务）、`stop/restart/logs.sh`、`init-remote-db.sh`（支持 RDS 与容器库）（4a845e4）
+- 小程序 `baseUrl` 切换线上域名占位 `https://your-domain.com`（208a21a）
+- 部署文档 `doc/DEPLOY.md`
+
+**验证**：JDK17 `mvn compile` 通过（含 OSS SDK 依赖下载）；YAML 解析校验；脚本 `bash -n`；小程序 `node --check`。Web 无源码改动。**实际部署/真机与小程序 WXML 行为待 ECS 环境与微信开发者工具验证**。
+
+---
+
 ## 2026-09-28 · 修复小程序登录后看不到学习助手入口
 
 - 原因：五个页面仅在 json 注册了 chat-ball 组件，但 wxml 中未放置 `<chat-ball />` 标签
