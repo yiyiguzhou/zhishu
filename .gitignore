@@ -26,6 +26,7 @@ deploy/minio/.env
 deploy/.env.prod
 deploy/certs/
 deploy/web-dist/
+deploy/nacos/initdb/
 
 # --- 微信开发者工具本机私有配置 ---
 mini/project.private.config.json

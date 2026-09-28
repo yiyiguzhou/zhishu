@@ -1,0 +1,75 @@
+# Nacos 3 节点集群（MySQL 存配置），在专用主机上部署。
+# 启动前先执行 scripts/deploy/init-nacos-cluster.sh（从镜像提取建表 SQL 并启动）。
+#
+# 主机端口映射：nacos1→8841/9841，nacos2→8842/9842，nacos3→8843/9843。
+# 业务后端经云 SLB（TCP 转发 8848/9848 到三节点）或地址列表访问，
+# 不要让客户端直连某一个节点。
+name: zhishu-nacos-cluster
+
+x-nacos-env: &nacos-env
+  MODE: cluster
+  NACOS_SERVERS: "nacos1:8848 nacos2:8848 nacos3:8848"
+  SPRING_DATASOURCE_PLATFORM: mysql
+  MYSQL_SERVICE_HOST: mysql
+  MYSQL_SERVICE_PORT: 3306
+  MYSQL_SERVICE_DB_NAME: nacos_config
+  MYSQL_SERVICE_USER: root
+  MYSQL_SERVICE_PASSWORD: ${NACOS_MYSQL_PASSWORD}
+  MYSQL_SERVICE_DB_PARAM: characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false
+  NACOS_AUTH_ENABLE: "true"
+  NACOS_AUTH_TOKEN: ${NACOS_AUTH_TOKEN}
+  NACOS_AUTH_IDENTITY_KEY: zhishu
+  NACOS_AUTH_IDENTITY_VALUE: zhishu-nacos-internal
+  JVM_XMS: 256m
+  JVM_XMX: 512m
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: nacos-cluster-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${NACOS_MYSQL_PASSWORD}
+      MYSQL_DATABASE: nacos_config
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+
+  nacos1:
+    image: nacos/nacos-server:v2.5.4
+    hostname: nacos1
+    container_name: nacos1
+    depends_on:
+      - mysql
+    environment: *nacos-env
+    ports:
+      - "8841:8848"
+      - "9841:9848"
+    restart: unless-stopped
+
+  nacos2:
+    image: nacos/nacos-server:v2.5.4
+    hostname: nacos2
+    container_name: nacos2
+    depends_on:
+      - mysql
+    environment: *nacos-env
+    ports:
+      - "8842:8848"
+      - "9842:9848"
+    restart: unless-stopped
+
+  nacos3:
+    image: nacos/nacos-server:v2.5.4
+    hostname: nacos3
+    container_name: nacos3
+    depends_on:
+      - mysql
+    environment: *nacos-env
+    ports:
+      - "8843:8848"
+      - "9843:9848"
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
