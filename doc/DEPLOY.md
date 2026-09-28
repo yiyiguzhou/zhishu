@@ -125,7 +125,73 @@ bash scripts/deploy/start.sh
    - downloadFile 合法域名：OSS/CDN 域名（`<video>` 播放预签名地址用）
 3. 微信开发者工具上传 → 提交审核 → 发布。
 
-## 10. 常见问题
+## 10. 集群部署（阶段一：高可用）
+
+单机部署验证通过后，按下列方案升级为无单点集群。后端本身已无状态
+（JWT、Redis 验证码、OSS 视频、客户端持有助手上下文），扩容只需加机器。
+
+### 10.1 资源规划
+
+| 角色 | 数量/规格 | 部署内容 |
+|---|---|---|
+| 应用 ECS | 2~3 台，跨可用区 | compose 只起 backend+nginx（`COMPOSE_PROFILES=""`） |
+| Nacos | 3 节点（`docker-compose.cluster.yml`） | 建议 3 台小 ECS 跨可用区；与业务分开 |
+| RDS MySQL | 高可用版（主备自动切换） | 库名 zhishu |
+| 云 Redis | 标准版主从 | 验证码/锁/缓存 |
+| SLB | 1 个 | 对公网统一入口；另可为 Nacos 建内网 SLB |
+
+安全组：应用 ECS 只接受来自 SLB 的 80/443；其余端口仅 VPC 内网。
+
+### 10.2 启动 Nacos 集群
+
+在 3 台 Nacos 主机上分别拉代码后，用集群编排（示例为同机三容器起步；
+跨可用区部署时把三个节点拆开并用 `NACOS_SERVERS` 互指内网 IP）：
+
+```bash
+bash scripts/deploy/init-nacos-cluster.sh
+```
+
+建内网 SLB：TCP 监听 8848/9848，后端服务器组包含三个节点（端口 8848/9848）。
+
+### 10.3 应用 ECS 配置（每台）
+
+`deploy/.env.prod` 关键项：
+
+```bash
+COMPOSE_PROFILES=""                          # 不启动本地 nacos/redis/mysql
+MYSQL_URL='jdbc:mysql://<RDS高可用内网地址>:3306/zhishu?...&useSSL=true'
+NACOS_SERVER_ADDR_INTERNAL=<nacos内网SLB地址>:8848
+REDIS_HOST_INTERNAL=<云Redis VPC 地址>
+REDIS_PORT_INTERNAL=6379
+MEDIA_MODE=oss                               # 集群强制 oss，禁用 local/nas
+```
+
+每台启动（机器规格够也可多副本）：
+
+```bash
+BACKEND_REPLICAS=1 bash scripts/deploy/start.sh
+```
+
+### 10.4 公网 SLB
+
+- **TCP 监听 443** → 各应用 ECS:443（证书在 Nginx 容器，SLB 透传；也可改 HTTPS 监听在 SLB 卸载证书）。
+- TCP 监听 80 同样透传，由 Nginx 301 到 443。
+- SSE 长连接：SLB 空闲超时调到允许的最大值（900s），助手流式期间持续有数据帧，正常不会空闲断开。
+- 加机器扩容只需在 SLB 后端组挂新 ECS，启动同一套 compose。
+
+### 10.5 集群验证
+
+- 分别停掉任意一个 backend 容器 / 一台应用 ECS / 一个 Nacos 节点，列表、登录、播放、助手均正常；
+- 在实例 A 上请求验证码，用日志/端口直连实例 B 执行登录，验证通过（Redis 共享）；
+- 滚动发布一台时观察 SLB 健康检查与优雅停机（在途 SSE 不中断到 30s 宽限结束）。
+
+### 10.6 后续演进
+
+- 读压力上升：RDS 加只读实例，引入 dynamic-datasource 按 `@DS` 做读写分离；
+- Web 静态站可迁 OSS+CDN 并去掉 Nginx 层，SLB 直接 TCP/HTTP 转发到后端；
+- 定时任务必须配 XXL-Job/ShedLock，禁止裸用 `@Scheduled`。
+
+## 11. 常见问题
 
 - **助手回复整段卡住/一次蹦出全部**：Nginx 对 `/api/assistant/chat` 必须 `proxy_buffering off`，已在配置中处理，自定义改动时勿删。
 - **播放地址 403 / SignatureDoesNotMatch**：多为后端 `OSS_ENDPOINT` 与实际访问主机不一致，或服务器时钟漂移（`timedatectl` 检查 NTP）。

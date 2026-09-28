@@ -31,6 +31,16 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 **验证**：JDK17 `mvn compile` 通过（含 OSS SDK 依赖下载）；YAML 解析校验；脚本 `bash -n`；小程序 `node --check`。Web 无源码改动。**实际部署/真机与小程序 WXML 行为待 ECS 环境与微信开发者工具验证**。
 
+**阶段一 · 高可用集群改造（同日追加）**，目标无单点：后端无状态多副本 + Nacos 集群 + RDS 高可用 + 云 Redis + SLB：
+
+- 验证码改存 Redis（StringRedisTemplate，5 分钟过期），多实例共享发码/校验（7578711）
+- 引入 actuator：`/actuator/health` 及 liveness/readiness 子探针；优雅停机 30s 宽限（c0b82ca）
+- 编排支持 `--scale backend=N`：compose 加 redis 持久化、Nacos/Redis/MySQL 改 profile、
+  Nginx 经 Docker DNS 动态解析后端；common.sh 统一 compose `--env-file` 插值（f33a040）
+- Nacos 三节点集群编排（独立 MySQL 存 nacos_config，建表 SQL 从镜像提取，不入库）（87bff88）
+- `doc/DEPLOY.md` 第 10 节：集群资源规划、Nacos 集群、应用 ECS 配置、SLB、验证与演进
+- 验证：mvn compile、YAML、bash -n 通过；**实际故障切换/扩缩容行为待云上验证**
+
 ---
 
 ## 2026-09-28 · 修复小程序登录后看不到学习助手入口
