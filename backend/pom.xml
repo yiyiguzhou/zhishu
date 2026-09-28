@@ -57,6 +57,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Redis：验证码、分布式锁、缓存（多实例共享状态） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
         <!-- Nacos：服务注册发现 + 配置中心（连接地址见 application.yml，可用 NACOS_SERVER_ADDR 覆盖） -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
