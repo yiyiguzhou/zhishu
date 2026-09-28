@@ -122,6 +122,11 @@ export default function ChatAssistant() {
     scrollBottom();
   };
 
+  // 未登录不展示入口（助手仅登录用户可用）
+  if (!token) {
+    return null;
+  }
+
   return (
     <>
       <FloatButton
