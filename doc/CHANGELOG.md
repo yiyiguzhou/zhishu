@@ -16,6 +16,13 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-28 · 修复助手在 Web 端无回复（Vite 代理 IPv4/IPv6 不匹配）
+
+- 现象：浏览器提问无任何返回；后端 SSE 实际正常（直连 8080 有 18 帧增量）
+- 原因：Vite 仅监听 IPv6 `::1`，代理目标写成 `localhost` 解析到 IPv4 127.0.0.1，
+  上游连接失败（http 000），请求未到达后端
+- 修复：vite proxy target 显式改为 `http://127.0.0.1:8080`；重启 Vite 后代理 SSE 正常
+
 ## 2026-09-28 · 大模型学习助手上线（tag: feature-learning-assistant）
 
 - **后端**：`/api/assistant/chat`（SSE 流式）与 `/chat/sync`（整体返回）；
