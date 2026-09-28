@@ -9,7 +9,7 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 | 角色 | 地址 | 说明 |
 |---|---|---|
 | 应用服务器（后端/Web） | 192.168.1.175 | macOS，Spring Boot + React |
-| 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos 2.5.4、MinIO（数据目录本机 `~/Documents/YouTube`） |
+| 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos 2.5.4、MinIO（数据目录本机 `~/Documents/YouTube`）、Redis 7（AOF，供验证码等共享状态） |
 | NAS（可选，当前不使用） | 192.168.1.2 | WD My Cloud EX2 Ultra |
 
 **里程碑 Tags**：`baseline-skeleton`（骨架基线）→ `arch-nacos`（Nacos）→ `data-mysql`（MySQL）→ `media-minio-gateway`（视频网关）→ `feature-learning-assistant`（学习助手）
@@ -40,6 +40,8 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 - Nacos 三节点集群编排（独立 MySQL 存 nacos_config，建表 SQL 从镜像提取，不入库）（87bff88）
 - `doc/DEPLOY.md` 第 10 节：集群资源规划、Nacos 集群、应用 ECS 配置、SLB、验证与演进
 - 验证：mvn compile、YAML、bash -n 通过；**实际故障切换/扩缩容行为待云上验证**
+- 开发环境配套：.38 上新增 `zhishu-redis` 容器（redis:7-alpine，AOF，命名卷
+  zhishu-redis-data，6379，无密码与开发默认值一致），本机实测 PING→PONG
 
 ---
 
