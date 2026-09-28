@@ -2,6 +2,8 @@
 spring:
   application:
     name: zhishu-backend
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   data:
     redis:
       host: ${REDIS_HOST:192.168.1.38}
@@ -79,3 +81,15 @@ logging:
 
 server:
   port: 8080
+  shutdown: graceful    # 滚动发布时等待在途请求（含 SSE）处理完再退出
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true    # /actuator/health/liveness、/readiness（SLB/K8s 探针）
