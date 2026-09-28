@@ -119,7 +119,8 @@ bash scripts/deploy/start.sh
 
 ## 9. 小程序上线
 
-1. `mini/app.js` 的 `baseUrl` 已指向线上域名（随第 7 步替换）。
+1. `mini/app.js`：把 `USE_PROD` 改为 `true`（开发时保持 `false` 走局域网后端），
+   并随第 7 步替换 `your-domain.com`。
 2. 微信公众平台：完成小程序备案；"开发管理 → 服务器域名"添加：
    - request 合法域名：`https://实际域名`
    - downloadFile 合法域名：OSS/CDN 域名（`<video>` 播放预签名地址用）
