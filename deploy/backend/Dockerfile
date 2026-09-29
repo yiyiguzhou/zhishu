@@ -3,6 +3,8 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /build
 # 先单独拷贝 pom 预热依赖层
 COPY backend/pom.xml ./pom.xml
+# 国内构建走阿里云 Maven 镜像
+COPY deploy/backend/maven-settings.xml /root/.m2/settings.xml
 RUN mvn -B -q dependency:go-offline
 COPY backend/src ./src
 RUN mvn -B -q clean package -DskipTests

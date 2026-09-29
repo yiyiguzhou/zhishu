@@ -22,7 +22,7 @@ services:
       - NACOS_AUTH_IDENTITY_KEY=zhishu
       - NACOS_AUTH_IDENTITY_VALUE=zhishu-nacos-internal
       - JVM_XMS=256m
-      - JVM_XMX=512m
+      - JVM_XMX=256m
     volumes:
       - nacos-data:/home/nacos/data
       - nacos-logs:/home/nacos/logs
@@ -50,6 +50,8 @@ services:
       - NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR_INTERNAL:-nacos:8848}
       - REDIS_HOST=${REDIS_HOST_INTERNAL:-redis}
       - REDIS_PORT=${REDIS_PORT_INTERNAL:-6379}
+      # 小规格机器限制后端堆大小（容器内默认会按 cgroup 给到 ~450M）
+      - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
     restart: unless-stopped
 
   nginx:
@@ -76,6 +78,7 @@ services:
       - MYSQL_DATABASE=${MYSQL_DB}
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/conf.d/zhishu.cnf:ro
     restart: unless-stopped
 
 volumes:
