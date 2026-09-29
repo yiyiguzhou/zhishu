@@ -56,6 +56,9 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
   预签名播放链路此前已实测 206
 - 排障：RAM 应用账户只授对象数据动作，故 HeadObject/Policy 类接口报 403（正常），
   策略管理用主账号；bucket 为"仅 Bucket Policy"模式，对象 ACL 禁用
+- 本地后端切 OSS 模式实测通过：6 个视频经 OssMediaResolver 预签名播放全部 206，
+  封面走 OSS 匿名地址；新增 `scripts/dev-run-oss.sh`（AK/SK 读 .dev-secrets，
+  set -a 自动导出——直接 source 的变量不进 mvn 子进程，曾因此报 AK 空）
 
 ## 2026-09-28 · 修复小程序本地无视频（baseUrl 误指线上占位域名）
 
