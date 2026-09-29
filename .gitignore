@@ -18,6 +18,7 @@ web/tsconfig.tsbuildinfo
 
 # --- runtime ---
 /tmp/
+.dev-secrets
 
 # --- 网关凭据（MinIO 管理员密码等） ---
 deploy/minio/.env
