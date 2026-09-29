@@ -24,17 +24,17 @@ INSERT INTO category (id, name, cat_key, cat_type) VALUES
 -- 封面：bucket covers/ 前缀（anonymous download，免登录展示）；地址用网关绝对路径。
 INSERT INTO video (id, title, blogger_id, category_id, cover, media_key, duration, hot_score, source_type, play_url) VALUES
   (1, 'AI最前沿的人，已经不聊模型了#aicoding #易论AI #归藏 #colaOS #李继刚', NULL, 10,
-   'http://192.168.1.38:9000/zhishu-video/covers/ai-frontier.jpg', 'ai-frontier.mp4', 0, 0, 'minio', NULL),
+   'https://zhishu-video-ai.oss-cn-beijing.aliyuncs.com/covers/ai-frontier.jpg', 'ai-frontier.mp4', 0, 0, 'minio', NULL),
   (2, 'Harness Engineering 到底是什么？概念、实战与争议，一次全部讲清楚', NULL, 1,
-   'http://192.168.1.38:9000/zhishu-video/covers/harness-engineering-explained.jpg', 'harness-engineering-explained.mp4', 0, 0, 'minio', NULL),
+   'https://zhishu-video-ai.oss-cn-beijing.aliyuncs.com/covers/harness-engineering-explained.jpg', 'harness-engineering-explained.mp4', 0, 0, 'minio', NULL),
   (3, 'RAG 工作机制详解——一个高质量知识库背后的技术全流程', NULL, 3,
-   'http://192.168.1.38:9000/zhishu-video/covers/rag-workflow-deep-dive.jpg', 'rag-workflow-deep-dive.mp4', 0, 0, 'minio', NULL),
+   'https://zhishu-video-ai.oss-cn-beijing.aliyuncs.com/covers/rag-workflow-deep-dive.jpg', 'rag-workflow-deep-dive.mp4', 0, 0, 'minio', NULL),
   (4, 'Token 到底是什么？—— 揭秘大模型背后的“文字压缩术”', NULL, 11,
-   'http://192.168.1.38:9000/zhishu-video/covers/what-is-token.jpg', 'what-is-token.mp4', 0, 0, 'minio', NULL),
+   'https://zhishu-video-ai.oss-cn-beijing.aliyuncs.com/covers/what-is-token.jpg', 'what-is-token.mp4', 0, 0, 'minio', NULL),
   (5, '如何使用第三方模型驱动 Codex（无需 OpenAI 账号）', NULL, 9,
-   'http://192.168.1.38:9000/zhishu-video/covers/drive-codex-thirdparty-models.jpg', 'drive-codex-thirdparty-models.mp4', 0, 0, 'minio', NULL),
+   'https://zhishu-video-ai.oss-cn-beijing.aliyuncs.com/covers/drive-codex-thirdparty-models.jpg', 'drive-codex-thirdparty-models.mp4', 0, 0, 'minio', NULL),
   (6, '我的 AI 编程全流程：如何使用 AI 稳定交付一个高质量的产品', NULL, 9,
-   'http://192.168.1.38:9000/zhishu-video/covers/my-ai-coding-workflow.jpg', 'my-ai-coding-workflow.mp4', 0, 0, 'minio', NULL);
+   'https://zhishu-video-ai.oss-cn-beijing.aliyuncs.com/covers/my-ai-coding-workflow.jpg', 'my-ai-coding-workflow.mp4', 0, 0, 'minio', NULL);
 
 INSERT INTO tag (id, name) VALUES
   (1, 'RAG'),
