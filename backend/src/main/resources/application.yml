@@ -54,7 +54,7 @@ zhishu:
       endpoint: ${OSS_ENDPOINT:https://oss-cn-hangzhou.aliyuncs.com}
       access-key: ${OSS_ACCESS_KEY:}
       secret-key: ${OSS_SECRET_KEY:}
-      bucket: ${OSS_BUCKET:zhishu-video}
+      bucket: ${OSS_BUCKET:zhishu-video-ai}
     # nas 模式（备选）：后端本机直挂 NAS 共享
     nas:
       host: ${NAS_IP:192.168.1.2}

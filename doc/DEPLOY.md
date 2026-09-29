@@ -84,13 +84,13 @@ ssh -L 8848:127.0.0.1:8848 <ECS 用户>@<ECS 公网IP>
 
 ## 6. OSS 与视频迁移
 
-1. 控制台建私有 bucket（与 RDS 同地域），创建仅授权 `AliyunOSSFullAccess`（建议收窄到该 bucket）的 RAM 用户，拿 AK/SK。
-2. `OSS_ENDPOINT` 填 bucket 对外域名（默认 `https://oss-cn-<地域>.aliyuncs.com`，或 CDN/自定义域名）。预签名 URL 的主机名取自该值，必须与客户端实际访问地址一致。
+1. 控制台建私有 bucket `zhishu-video-ai`（bucket 名全局唯一，原名被他人占用），创建仅授权该 bucket 的 RAM 用户，拿 AK/SK。
+2. `OSS_ENDPOINT` 填 bucket 对外域名（如 `https://oss-cn-beijing.aliyuncs.com`，或 CDN/自定义域名）。预签名 URL 的主机名取自该值，必须与客户端实际访问地址一致。
 3. 上传视频，**对象 key 与数据库 `media_key` 保持一致**（沿用 MinIO bucket 中的目录结构）：
 
 ```bash
 # 本机安装 ossutil 后
-ossutil cp -r ~/Documents/YouTube/ oss://zhishu-video/
+ossutil cp -r ~/Documents/YouTube/ oss://zhishu-video-ai/
 ```
 
 封面若要匿名展示，可对 `covers/` 前缀单独设公共读。
