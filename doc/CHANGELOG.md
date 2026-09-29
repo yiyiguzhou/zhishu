@@ -45,6 +45,11 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-29 · 新增业务与技术架构图
+
+- `doc/architecture/` 新增 Mermaid 图源（业务 5 图 / 技术 7 图）及渲染出的 12 张 SVG，
+  加 README 索引；内容反映最新状态（线上 OSS、Redis、Nacos 集群、SLB、本地 MinIO）
+
 ## 2026-09-29 · 视频迁移至阿里云 OSS（zhishu-video-ai，北京）
 
 - OSS bucket 建在华北2-北京（原名 zhishu-video 被他人占用），私有、标准存储
