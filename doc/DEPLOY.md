@@ -34,6 +34,21 @@ sudo apt install -y nodejs rsync default-mysql-client git
 git clone -b feat/prod-deploy <仓库地址> zhishu && cd zhishu
 ```
 
+### 安全组（必做，否则外网打不开）
+
+ECS 控制台 → 实例 → 安全组 → 入方向添加：
+
+| 端口范围 | 授权对象 | 说明 |
+|---|---|---|
+| 80/80 | 0.0.0.0/0 | HTTP（Nginx 跳 HTTPS） |
+| 443/443 | 0.0.0.0/0 | HTTPS |
+| 22/22 | 你的 IP 网段 | SSH（不要开全网） |
+
+3306/6379/8848/9848/8080 **均不加入方向规则**——它们只在 compose 内部网络使用。
+
+验证安全组是否真的放行可用 https://check-host.net 的 TCP 检查（本机若开着
+TUN 模式代理，`nc` 会被本地代答给出假"可连"，务必用外部节点验证）。
+
 ## 3. 数据库
 
 **RDS**：创建实例时把 ECS 内网 IP 加入白名单，建账号（如 `zhishu`）。
@@ -68,19 +83,32 @@ cp deploy/.env.prod.example deploy/.env.prod
 
 ## 5. Nacos
 
+注意：**镜像 2.5.4 不再内置默认 `nacos/nacos` 管理员，也不自动初始化用户**，
+直接启动会报 "User nacos not found"。当前方案：Nacos 配置与用户信息存
+MySQL 容器的 `nacos_config` 库（compose 中经 `MYSQL_SERVICE_*` 环境变量配置），
+管理员手工建立：
+
 ```bash
-docker compose -f deploy/docker-compose.prod.yml up -d nacos
+# 1) 建库 + 建表（schema 从镜像提取）
+docker exec -i zhishu-mysql mysql -uroot -p"$MYSQL_PASSWORD" \
+  -e "CREATE DATABASE nacos_config DEFAULT CHARACTER SET utf8mb4;"
+docker run --rm --entrypoint sh nacos/nacos-server:v2.5.4 \
+  -c "cat /home/nacos/conf/mysql-schema.sql" \
+  | docker exec -i zhishu-mysql mysql -uroot -p"$MYSQL_PASSWORD" nacos_config
+
+# 2) 建管理员（bcrypt 哈希必须用标准输入传 SQL，经 ssh 双引号会被 $ 展开破坏）
+HASH=$(htpasswd -bnBC 10 "" <初始密码> | tr -d ':\n' | sed 's/$2y/$2a/')
+printf "INSERT INTO users (username,password,enabled) VALUES ('nacos','%s',true);\n" "$HASH" \
+ | docker exec -i zhishu-mysql mysql -uroot -p"$MYSQL_PASSWORD" nacos_config
+printf "INSERT INTO roles (username,role) VALUES ('nacos','ROLE_ADMIN');" \
+ | docker exec -i zhishu-mysql mysql -uroot -p"$MYSQL_PASSWORD" nacos_config
+
+# 3) 启动后立刻登录并改强密码
+curl -X PUT "http://127.0.0.1:8848/nacos/v1/auth/users?username=nacos&oldPassword=<初始密码>&newPassword=<强密码>" \
+  -H "accessToken: <登录 token>"
 ```
 
-控制台经 SSH 隧道访问（不开放公网）：
-
-```bash
-ssh -L 8848:127.0.0.1:8848 <ECS 用户>@<ECS 公网IP>
-# 浏览器开 http://127.0.0.1:8848/nacos，首登改掉 nacos/nacos
-```
-
-密钥放环境变量即可，Nacos 非必须再建配置；如需集中管理，在 `ZHISHU_GROUP`
-建 `zhishu-backend.yaml` 覆盖对应键。
+旧文档（基于 2.4 以前镜像自动初始化管理员）的控制台首次登录方式不再适用。
 
 ## 6. OSS 与视频迁移
 
@@ -108,12 +136,30 @@ grep -rl your-domain.com deploy mini | xargs sed -i '' 's/your-domain.com/实际
 
 ## 8. 一键启动
 
+Nginx 挂载的是 `deploy/nginx/active.conf` 符号链接：
+
+```bash
+# 域名/证书就绪前：仅 HTTP（经公网 IP 访问）
+ln -sfn nginx-http-only.conf deploy/nginx/active.conf
+# 证书就绪后：HTTPS 正式配置
+ln -sfn nginx.conf deploy/nginx/active.conf
+```
+
+然后启动：
+
 ```bash
 bash scripts/deploy/start.sh
 ```
 
 脚本会校验 `.env.prod` 和证书、构建 Web 并同步到 `deploy/web-dist/`、构建后端镜像、起全部容器。
 其他命令：`scripts/deploy/{stop,restart,logs}.sh [服务名]`。
+
+## 8.1 数据库自动备份
+
+`scripts/deploy/backup-db.sh`：mysqldump（`--single-transaction`）业务库与
+`nacos_config`，gzip 后上传 `oss://zhishu-video-ai/db-backups/`。已装 cron
+每天 03:17 执行，日志 `/var/log/zhishu-backup.log`。建议在 OSS 控制台对
+`db-backups/` 前缀配生命周期（如 30 天自动过期）。
 
 验证：浏览器开 `https://实际域名`，检查列表、详情播放（预签名）、学习助手流式回复、登录。
 

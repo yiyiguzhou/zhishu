@@ -45,6 +45,35 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-30 · 正式环境部署（进行中）· ECS 北京 182.92.124.62
+
+**背景**：备案完成，上线阿里云。资源：ECS 2核2G + 40G（Alibaba Cloud Linux 3），
+MySQL 8 自建容器（预算考虑，未购 RDS），视频走已有的北京 OSS `zhishu-video-ai`。
+代码经 rsync 部署到 `/opt/zhishu`（GitHub 国内 clone 超时）。
+
+**变更内容 / 排障记录**：
+
+- 小规格适配：2G swap 兜底；Nacos JVM 256m（补 `JVM_XMN=128m`——镜像默认
+  -Xmn512m 大于堆曾导致初始化静默失败）；MySQL 缓冲池 128m；后端限堆 384m；
+  Dockerfile 构建走阿里云 Maven 镜像
+- **中文双重编码修复**：data.sql 经 mysql 客户端导入时默认 latin1，中文变
+  `æœ€ä¹‹`；init-remote-db.sh 统一加 `--default-character-set=utf8mb4`，
+  重灌后字节校验正确
+- **Nacos 2.5.4 变化**：镜像不再内置/自动初始化 `nacos` 管理员，启动即报
+  "User nacos not found"。改为配置与用户存 MySQL 的 `nacos_config` 库
+  （官方 mysql-schema.sql 建表），管理员手工 INSERT（bcrypt），
+  启动后已用 API 改成强密码并同步 .env.prod
+- Nginx 配置切换：compose bind 源不支持变量插值，改用 `nginx/active.conf`
+  符号链接（当前指 nginx-http-only.conf，证书就绪后 ln 指 nginx.conf）
+- **数据库自动备份**：backup-db.sh 每日 03:17 dump zhishu + nacos_config，
+  gzip 上传 OSS `db-backups/`（已实测；建议配 OSS 生命周期过期）
+
+**当前状态**：五容器（mysql/nacos/redis/backend/nginx）在 ECS 全部运行，
+服务器本机访问页面/API 正常，后端注册 Nacos 健康，OSS 预签名播放此前已验证。
+**外网仍不通**：安全组入方向仅放行 22，需控制台补 80/443；
+域名尚在审核，证书与 HTTPS 切换待域名完成。（诊断时一度被本机 Clash TUN
+本地代答误导，已用 check-host.net 外部节点确认。）
+
 ## 2026-09-29 · 新增业务与技术架构图
 
 - `doc/architecture/` 新增 Mermaid 图源（业务 5 图 / 技术 7 图）及渲染出的 12 张 SVG，
