@@ -98,9 +98,11 @@ export default function Detail() {
           key={detail.playUrl}
           src={detail.playUrl}
           controls
+          controlsList="nodownload"
           autoPlay
           preload="metadata"
           poster={detail.cover}
+          onContextMenu={(e) => e.preventDefault()}
           style={{ width: "100%", maxHeight: 560, background: "#000", borderRadius: 8 }}
         >
           您的浏览器不支持 video 标签。
