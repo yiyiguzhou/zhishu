@@ -19,11 +19,15 @@ MYSQL_DB="${MYSQL_DB:-zhishu}"
 USE_CONTAINER="${USE_CONTAINER:-0}"
 
 # SQL 经标准输入传入；"$@" 为额外的 mysql 参数（库名或 -e）
+# --default-character-set=utf8mb4：否则客户端默认 latin1 会把 data.sql 的
+# UTF-8 字节双重编码（中文变 æœ€ä¹‹类乱码）
 run_mysql() {
   if [ "$USE_CONTAINER" = "1" ]; then
-    docker exec -i zhishu-mysql mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$@"
+    docker exec -i zhishu-mysql mysql --default-character-set=utf8mb4 \
+      -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$@"
   else
-    mysql -h"$MYSQL_HOST" -P"$MYSQL_PORT" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$@"
+    mysql --default-character-set=utf8mb4 \
+      -h"$MYSQL_HOST" -P"$MYSQL_PORT" -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$@"
   fi
 }
 
