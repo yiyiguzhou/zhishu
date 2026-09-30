@@ -38,6 +38,8 @@ export default function UserCenter() {
   useEffect(() => {
     if (!token) return;
     (async () => {
+      // 归一化：任何情况下保证收藏/历史为数组，避免非数组返回导致 slice 报错白屏
+      const asArray = (v: unknown): HistoryDTO[] => (Array.isArray(v) ? v : []);
       try {
         const [u, fav, hist] = await Promise.all([
           api.profile(),
@@ -46,8 +48,8 @@ export default function UserCenter() {
         ]);
         setLocalUser(u);
         setUser(u);
-        setFavorites(fav);
-        setHistory(hist);
+        setFavorites(asArray(fav));
+        setHistory(asArray(hist));
       } finally {
         setLoading(false);
       }

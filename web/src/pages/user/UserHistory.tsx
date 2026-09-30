@@ -42,7 +42,8 @@ export default function UserHistory() {
   const [list, setList] = useState<HistoryDTO[] | null>(null);
 
   useEffect(() => {
-    if (token) api.history().then(setList).catch(() => setList([]));
+    if (token)
+      api.history().then((v) => setList(Array.isArray(v) ? v : [])).catch(() => setList([]));
   }, [token]);
 
   if (!token) return <Navigate to="/login" replace />;

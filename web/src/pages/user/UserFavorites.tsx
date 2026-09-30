@@ -33,7 +33,8 @@ export default function UserFavorites() {
   const [list, setList] = useState<HistoryDTO[] | null>(null);
 
   useEffect(() => {
-    if (token) api.favorites().then(setList).catch(() => setList([]));
+    if (token)
+      api.favorites().then((v) => setList(Array.isArray(v) ? v : [])).catch(() => setList([]));
   }, [token]);
 
   if (!token) return <Navigate to="/login" replace />;
