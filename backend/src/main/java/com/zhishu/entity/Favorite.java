@@ -15,5 +15,7 @@ public class Favorite {
     private Long userId;
     private String targetType; // video | article
     private Long targetId;
+    private String status;    // active | canceled
     private LocalDateTime createdAt;
+    private LocalDateTime canceledAt;
 }

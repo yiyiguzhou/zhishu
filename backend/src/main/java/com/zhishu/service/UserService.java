@@ -1,6 +1,7 @@
 package com.zhishu.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.zhishu.common.BusinessException;
 import com.zhishu.common.UserContext;
 import com.zhishu.dto.FavoriteRequest;
@@ -49,37 +50,49 @@ public class UserService {
         Long userId = UserContext.require();
         ensureTargetExists(req.getTargetType(), req.getTargetId());
 
-        Long count = favoriteMapper.selectCount(new LambdaQueryWrapper<Favorite>()
+        // 同一用户+对象只有一行：active 幂等；canceled 复活；无行则插入
+        Favorite existing = favoriteMapper.selectOne(new LambdaQueryWrapper<Favorite>()
                 .eq(Favorite::getUserId, userId)
                 .eq(Favorite::getTargetType, req.getTargetType())
                 .eq(Favorite::getTargetId, req.getTargetId()));
-        if (count != null && count > 0) {
+        if (existing == null) {
+            Favorite f = new Favorite();
+            f.setUserId(userId);
+            f.setTargetType(req.getTargetType());
+            f.setTargetId(req.getTargetId());
+            f.setStatus("active");
+            f.setCreatedAt(LocalDateTime.now());
+            favoriteMapper.insert(f);
+            log.info("新增收藏 uid={} {}#{}", userId, req.getTargetType(), req.getTargetId());
+        } else if ("canceled".equals(existing.getStatus())) {
+            existing.setStatus("active");
+            existing.setCanceledAt(null);
+            favoriteMapper.updateById(existing);
+            log.info("重新收藏（取消后恢复）uid={} {}#{}", userId, req.getTargetType(), req.getTargetId());
+        } else {
             log.debug("收藏已存在，幂等跳过 uid={} {}#{}", userId, req.getTargetType(), req.getTargetId());
-            return; // 幂等
         }
-        Favorite f = new Favorite();
-        f.setUserId(userId);
-        f.setTargetType(req.getTargetType());
-        f.setTargetId(req.getTargetId());
-        f.setCreatedAt(LocalDateTime.now());
-        favoriteMapper.insert(f);
-        log.info("新增收藏 uid={} {}#{}", userId, req.getTargetType(), req.getTargetId());
     }
 
+    /** 取消收藏：软删除，行保留为 canceled，区分"从未收藏"。 */
     public void removeFavorite(String targetType, Long targetId) {
         Long userId = UserContext.require();
-        int deleted = favoriteMapper.delete(new LambdaQueryWrapper<Favorite>()
+        int updated = favoriteMapper.update(null, new LambdaUpdateWrapper<Favorite>()
                 .eq(Favorite::getUserId, userId)
                 .eq(Favorite::getTargetType, targetType)
-                .eq(Favorite::getTargetId, targetId));
-        log.info("取消收藏 uid={} {}#{} 删除{}行", userId, targetType, targetId, deleted);
+                .eq(Favorite::getTargetId, targetId)
+                .eq(Favorite::getStatus, "active")
+                .set(Favorite::getStatus, "canceled")
+                .set(Favorite::getCanceledAt, LocalDateTime.now()));
+        log.info("取消收藏 uid={} {}#{} 更新{}行", userId, targetType, targetId, updated);
     }
 
-    /** 收藏列表（按收藏时间倒序）。骨架先取 target_type=video。 */
+    /** 收藏列表：仅 active（canceled 行不返回）。 */
     public List<HistoryDTO> listFavorites() {
         Long userId = UserContext.require();
         return favoriteMapper.selectList(new LambdaQueryWrapper<Favorite>()
                         .eq(Favorite::getUserId, userId)
+                        .eq(Favorite::getStatus, "active")
                         .orderByDesc(Favorite::getCreatedAt))
                 .stream().map(this::toHistoryDTO)
                 .collect(Collectors.toList());

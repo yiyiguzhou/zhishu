@@ -45,6 +45,16 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-30 · 收藏改造：确认弹框 + 状态落库 + 软取消
+
+- favorite 表新增 `status`（active/canceled）与 `canceled_at`；“未收藏”区分
+  从未收藏（无行）与收藏后取消（行保留 canceled）；重新收藏复活原行不新增
+- 后端：addFavorite 改为 upsert（插入/复活/幂等），removeFavorite 改软删除；
+  收藏列表、favorited 状态、收藏计数均只查 active
+- Web：详情页收藏按钮改 Popconfirm（取消/确认），仅确认写库
+- 验证：无头浏览器 + 数据库实测 取消不落库、确认 active、软取消 canceled、
+  重新收藏行数=1、个人中心卡片正常无报错
+
 ## 2026-09-30 · 新增日志功能（请求日志 + 业务关键节点）
 
 - **请求层**：RequestLoggingFilter 记录方法/路径/状态码/耗时/登录用户，手机号脱敏（c87cd95）

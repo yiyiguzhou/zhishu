@@ -86,14 +86,16 @@ public class VideoService {
                 new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.zhishu.entity.Favorite>()
                         .eq(com.zhishu.entity.Favorite::getUserId, userId)
                         .eq(com.zhishu.entity.Favorite::getTargetType, "video")
-                        .eq(com.zhishu.entity.Favorite::getTargetId, videoId)) > 0;
+                        .eq(com.zhishu.entity.Favorite::getTargetId, videoId)
+                        .eq(com.zhishu.entity.Favorite::getStatus, "active")) > 0;
     }
 
     private long favoriteCount(Long videoId) {
         Long c = favoriteMapper.selectCount(
                 new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.zhishu.entity.Favorite>()
                         .eq(com.zhishu.entity.Favorite::getTargetType, "video")
-                        .eq(com.zhishu.entity.Favorite::getTargetId, videoId));
+                        .eq(com.zhishu.entity.Favorite::getTargetId, videoId)
+                        .eq(com.zhishu.entity.Favorite::getStatus, "active"));
         return c == null ? 0 : c;
     }
 }

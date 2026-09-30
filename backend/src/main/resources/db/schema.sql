@@ -90,14 +90,18 @@ CREATE TABLE article (
 );
 
 CREATE TABLE favorite (
-    id          BIGINT      NOT NULL AUTO_INCREMENT,
-    user_id     BIGINT      NOT NULL,
-    target_type VARCHAR(16) NOT NULL COMMENT 'video | article',
-    target_id   BIGINT      NOT NULL,
-    created_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id           BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id      BIGINT       NOT NULL,
+    target_type  VARCHAR(16)  NOT NULL COMMENT 'video | article',
+    target_id    BIGINT       NOT NULL,
+    status       VARCHAR(16)  NOT NULL DEFAULT 'active' COMMENT 'active 收藏中 | canceled 已取消（软删除，行保留）',
+    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '首次收藏时间',
+    canceled_at  DATETIME     DEFAULT NULL COMMENT '最近一次取消时间',
     PRIMARY KEY (id),
     UNIQUE KEY uk_fav_user_target (user_id, target_type, target_id)
 );
+-- “未收藏”有两种状态：从未收藏（无行）、收藏后取消（行存在 status=canceled）；
+-- 重新收藏时将 canceled 行更新回 active，不新增行。
 
 CREATE TABLE history (
     id               BIGINT      NOT NULL AUTO_INCREMENT,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, Spin, Button, Tag, Typography, Space, Image, message, Row, Col } from "antd";
+import { Card, Spin, Button, Tag, Typography, Space, Image, message, Row, Col, Popconfirm } from "antd";
 import { HeartOutlined, HeartFilled, VideoCameraOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { api } from "../api";
 import { useAuth } from "../store/auth";
@@ -33,21 +33,34 @@ export default function Detail() {
     })();
   }, [id]);
 
-  const toggleFavorite = async () => {
+  const requireLogin = () => {
+    message.info("请先登录");
+    navigate("/login");
+  };
+
+  /** 确认收藏：调用后端写库，成功后更新本地状态。 */
+  const confirmFavorite = async () => {
     if (!token) {
-      message.info("请先登录");
-      navigate("/login");
+      requireLogin();
       return;
     }
     if (!detail) return;
     try {
-      if (detail.favorited) {
-        await api.removeFavorite("video", detail.id);
-      } else {
-        await api.addFavorite("video", detail.id);
-      }
-      setDetail({ ...detail, favorited: !detail.favorited });
-      message.success(detail.favorited ? "已取消收藏" : "已收藏");
+      await api.addFavorite("video", detail.id);
+      setDetail({ ...detail, favorited: true });
+      message.success("已收藏");
+    } catch (e: any) {
+      message.error(e.message);
+    }
+  };
+
+  /** 确认取消收藏：后端软删除（status=canceled，行保留）。 */
+  const confirmRemove = async () => {
+    if (!detail) return;
+    try {
+      await api.removeFavorite("video", detail.id);
+      setDetail({ ...detail, favorited: false });
+      message.success("已取消收藏");
     } catch (e: any) {
       message.error(e.message);
     }
@@ -82,14 +95,28 @@ export default function Detail() {
             </Text>
           </div>
         </Space>
-        <Button
-          type={detail.favorited ? "primary" : "default"}
-          danger={detail.favorited}
-          icon={detail.favorited ? <HeartFilled /> : <HeartOutlined />}
-          onClick={toggleFavorite}
-        >
-          {detail.favorited ? "已收藏" : "收藏"}
-        </Button>
+        {/* 收藏按钮：点击弹确认框，取消不落库，确认才写数据库 */}
+        {detail.favorited ? (
+          <Popconfirm
+            title="确认取消收藏？"
+            okText="确认"
+            cancelText="取消"
+            onConfirm={confirmRemove}
+          >
+            <Button type="primary" danger icon={<HeartFilled />}>
+              已收藏
+            </Button>
+          </Popconfirm>
+        ) : (
+          <Popconfirm
+            title="确认收藏该视频？"
+            okText="确认"
+            cancelText="取消"
+            onConfirm={confirmFavorite}
+          >
+            <Button icon={<HeartOutlined />}>收藏</Button>
+          </Popconfirm>
+        )}
       </Row>
 
       {/* 下面：视频播放器（常规播放功能） */}
