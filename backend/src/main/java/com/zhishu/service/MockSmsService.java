@@ -40,8 +40,11 @@ public class MockSmsService implements SmsService {
     @Override
     public void verify(String phone, String code) {
         String expected = redis.opsForValue().get(key(phone));
-        if (expected == null || !expected.equals(code)) {
-            throw new BusinessException(400, "验证码错误或已过期");
+        // Mock 模式：Redis 有码则按码校验；未点“获取验证码”/码已过期时，
+        // 兜底也认固定 123456，方便内测直接登录。接真实短信后此兜底必须移除。
+        boolean valid = expected != null ? expected.equals(code) : MOCK_CODE.equals(code);
+        if (!valid) {
+            throw new BusinessException(400, "验证码错误（当前环境固定为 123456）");
         }
     }
 }
