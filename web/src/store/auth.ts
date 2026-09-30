@@ -17,7 +17,8 @@ function loadCachedUser(): UserDTO | null {
 interface AuthState {
   token: string | null;
   user: UserDTO | null;
-  setLogin: (token: string, user: UserDTO) => void;
+  /** 写入 token+用户并持久化，返回本地缓存是否确认写好。 */
+  setLogin: (token: string, user: UserDTO) => boolean;
   setUser: (user: UserDTO) => void;
   logout: () => void;
 }
@@ -30,6 +31,11 @@ export const useAuth = create<AuthState>((set) => ({
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     set({ token, user });
+    // 回读确认：缓存确实已落盘，可供下一步刷新使用
+    return (
+      localStorage.getItem(TOKEN_KEY) === token &&
+      localStorage.getItem(USER_KEY) === JSON.stringify(user)
+    );
   },
   setUser: (user) => {
     // profile 后台刷新到新信息时同步更新缓存

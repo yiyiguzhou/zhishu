@@ -47,10 +47,17 @@ export default function Login() {
 
   const onFinish = async (values: { phone: string; code: string }) => {
     try {
+      // 1) 等待后端校验完成并返回 token + 用户信息
       const res = await api.login({ phone: values.phone, code: values.code });
-      setLogin(res.token, res.user);
+      // 2) 写入本地缓存，并确认 token/用户已真正落盘
+      const cached = setLogin(res.token, res.user);
+      if (!cached) {
+        message.error("本地状态写入失败，请重试");
+        return;
+      }
       message.success("登录成功");
-      navigate("/");
+      // 3) 缓存确认写好后，再跳转/刷新页面
+      navigate("/", { replace: true });
     } catch (e: any) {
       message.error(e.message);
     }
