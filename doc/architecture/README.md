@@ -13,22 +13,24 @@
 
 ## 业务架构图
 
+图片按格式分目录：[png/](png/)（应用内预览）、[svg/](svg/)（矢量）。
+
 | 图 | PNG（应用内预览） | SVG |
 |---|---|---|
-| 业务能力地图 | [PNG](business-architecture-diagram-1.png) | [SVG](business-architecture-diagram-1.svg) |
-| 核心业务流程 | [PNG](business-architecture-diagram-2.png) | [SVG](business-architecture-diagram-2.svg) |
-| 内容三种到达维度 | [PNG](business-architecture-diagram-3.png) | [SVG](business-architecture-diagram-3.svg) |
-| 信息架构（页面结构） | [PNG](business-architecture-diagram-4.png) | [SVG](business-architecture-diagram-4.svg) |
-| 业务数据模型 ER | [PNG](business-architecture-diagram-5.png) | [SVG](business-architecture-diagram-5.svg) |
+| 业务能力地图 | [PNG](png/business-architecture-diagram-1.png) | [SVG](svg/business-architecture-diagram-1.svg) |
+| 核心业务流程 | [PNG](png/business-architecture-diagram-2.png) | [SVG](svg/business-architecture-diagram-2.svg) |
+| 内容三种到达维度 | [PNG](png/business-architecture-diagram-3.png) | [SVG](svg/business-architecture-diagram-3.svg) |
+| 信息架构（页面结构） | [PNG](png/business-architecture-diagram-4.png) | [SVG](svg/business-architecture-diagram-4.svg) |
+| 业务数据模型 ER | [PNG](png/business-architecture-diagram-5.png) | [SVG](svg/business-architecture-diagram-5.svg) |
 
 ## 技术架构图
 
 | 图 | PNG（应用内预览） | SVG |
 |---|---|---|
-| 总体技术架构（线上） | [PNG](technical-architecture-diagram-1.png) | [SVG](technical-architecture-diagram-1.svg) |
-| 本地开发环境 | [PNG](technical-architecture-diagram-2.png) | [SVG](technical-architecture-diagram-2.svg) |
-| 后端分层架构 | [PNG](technical-architecture-diagram-3.png) | [SVG](technical-architecture-diagram-3.svg) |
-| 视频源抽象 StreamSource | [PNG](technical-architecture-diagram-4.png) | [SVG](technical-architecture-diagram-4.svg) |
-| 线上高可用部署拓扑 | [PNG](technical-architecture-diagram-5.png) | [SVG](technical-architecture-diagram-5.svg) |
-| 播放链路时序 | [PNG](technical-architecture-diagram-6.png) | [SVG](technical-architecture-diagram-6.svg) |
-| 登录与历史上报时序 | [PNG](technical-architecture-diagram-7.png) | [SVG](technical-architecture-diagram-7.svg) |
+| 总体技术架构（线上） | [PNG](png/technical-architecture-diagram-1.png) | [SVG](svg/technical-architecture-diagram-1.svg) |
+| 本地开发环境 | [PNG](png/technical-architecture-diagram-2.png) | [SVG](svg/technical-architecture-diagram-2.svg) |
+| 后端分层架构 | [PNG](png/technical-architecture-diagram-3.png) | [SVG](svg/technical-architecture-diagram-3.svg) |
+| 视频源抽象 StreamSource | [PNG](png/technical-architecture-diagram-4.png) | [SVG](svg/technical-architecture-diagram-4.svg) |
+| 线上高可用部署拓扑 | [PNG](png/technical-architecture-diagram-5.png) | [SVG](svg/technical-architecture-diagram-5.svg) |
+| 播放链路时序 | [PNG](png/technical-architecture-diagram-6.png) | [SVG](svg/technical-architecture-diagram-6.svg) |
+| 登录与历史上报时序 | [PNG](png/technical-architecture-diagram-7.png) | [SVG](svg/technical-architecture-diagram-7.svg) |
