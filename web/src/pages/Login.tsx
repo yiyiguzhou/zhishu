@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, Form, Input, Button, message, Typography } from "antd";
 import { api } from "../api";
@@ -7,7 +8,12 @@ const { Title, Text } = Typography;
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setLogin } = useAuth();
+  const { setLogin, token, user } = useAuth();
+
+  // 已登录直接回首页
+  useEffect(() => {
+    if (token && user) navigate("/", { replace: true });
+  }, [token, user, navigate]);
 
   const onFinish = async (values: { phone: string; code: string }) => {
     try {
