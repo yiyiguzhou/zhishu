@@ -1,6 +1,7 @@
 # 线上部署指南（阿里云）
 
 本文说明纸书平台上线的完整步骤。部署相关文件均在 `deploy/`，启动脚本在 `scripts/deploy/`。
+部署与开发中遇到的问题及排障方法见 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)。
 
 ## 1. 架构与资源清单
 
