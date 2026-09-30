@@ -16,6 +16,7 @@ import com.zhishu.mapper.VideoMapper;
 import com.zhishu.mapper.VideoTagMapper;
 import com.zhishu.service.media.StreamSource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 /**
  * 播放详情页数据组装。favorited 依赖当前登录态（未登录返回 false）。
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VideoService {
@@ -38,6 +40,7 @@ public class VideoService {
     private final StreamSource streamSource;
 
     public VideoDetailDTO detail(Long id) {
+        log.debug("开始组装视频详情 id={}", id);
         Video video = videoMapper.selectById(id);
         if (video == null) {
             throw new BusinessException(404, "视频不存在");
@@ -59,6 +62,7 @@ public class VideoService {
         dto.setPlayUrl(streamSource.resolvePlayUrl(video));
         dto.setFavorited(isFavorited(id));
         dto.setFavoriteCount(favoriteCount(id));
+        log.debug("视频详情组装完成 id={} 标签{}个 收藏数{}", id, dto.getTags().size(), dto.getFavoriteCount());
         return dto;
     }
 

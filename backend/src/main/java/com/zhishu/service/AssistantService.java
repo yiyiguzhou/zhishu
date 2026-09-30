@@ -7,6 +7,7 @@ import com.zhishu.common.UserContext;
 import com.zhishu.config.AssistantProperties;
 import com.zhishu.dto.AssistantChatRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -23,6 +24,7 @@ import java.util.Map;
  * 大模型学习助手：转发多轮对话到火山方舟（OpenAI 兼容 chat completions）。
  * Web 走 SSE 流式，小程序走整体返回；仅登录用户可用。
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AssistantService {
@@ -44,6 +46,8 @@ public class AssistantService {
         Map<String, Object> payload = payload(request, true);
 
         taskExecutor.execute(() -> {
+            long start = System.currentTimeMillis();
+            log.info("调用模型（流式）model={} 消息{}条", properties.getModel(), payload.get("messages") == null ? 0 : ((List<?>) payload.get("messages")).size());
             try {
                 org.springframework.web.client.RestClient.create(properties.getBaseUrl())
                         .post()
@@ -75,7 +79,9 @@ public class AssistantService {
                             return null;
                         });
                 emitter.complete();
+                log.info("模型流式返回完成 耗时{}ms", System.currentTimeMillis() - start);
             } catch (Exception e) {
+                log.warn("模型流式调用异常：{}", e.getMessage());
                 emitter.completeWithError(e);
             }
         });
@@ -88,6 +94,7 @@ public class AssistantService {
         if (properties.getApiKey() == null || properties.getApiKey().isBlank()) {
             throw new BusinessException(500, "学习助手密钥未配置");
         }
+        log.info("调用模型（非流式）model={}", properties.getModel());
         JsonNode resp = org.springframework.web.client.RestClient.create(properties.getBaseUrl())
                 .post()
                 .uri("/chat/completions")

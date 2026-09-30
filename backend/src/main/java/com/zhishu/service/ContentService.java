@@ -15,6 +15,7 @@ import com.zhishu.mapper.BloggerMapper;
 import com.zhishu.mapper.CategoryMapper;
 import com.zhishu.mapper.VideoMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -24,6 +25,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ContentService {
@@ -48,6 +50,7 @@ public class ContentService {
         List<ArticleDTO> as = articles.stream()
                 .map(a -> toArticleDTO(a, bloggers))
                 .collect(Collectors.toList());
+        log.info("热门聚合：视频{}个 文章{}个（limit={}）", vs.size(), as.size(), lim);
         return new HotResponse(vs, as);
     }
 
@@ -69,6 +72,7 @@ public class ContentService {
         List<Video> videos = videoMapper.selectList(new LambdaQueryWrapper<Video>()
                 .eq(Video::getCategoryId, category.getId())
                 .orderByDesc(Video::getHotScore));
+        log.info("按技术分类取视频 key={} 共{}个", key, videos.size());
         return videos.stream().map(v -> toVideoDTO(v, bloggerMap(), categoryMap())).collect(Collectors.toList());
     }
 
@@ -83,6 +87,7 @@ public class ContentService {
         List<Video> videos = videoMapper.selectList(new LambdaQueryWrapper<Video>()
                 .eq(Video::getBloggerId, bloggerId)
                 .orderByDesc(Video::getHotScore));
+        log.info("按博主取视频 bloggerId={} 共{}个", bloggerId, videos.size());
         return videos.stream().map(v -> toVideoDTO(v, bloggerMap(), categoryMap())).collect(Collectors.toList());
     }
 
@@ -108,6 +113,7 @@ public class ContentService {
         dto.setCreatedAt(v.getCreatedAt());
         Blogger b = bloggers.get(v.getBloggerId());
         dto.setAuthorName(b != null ? b.getName() : null);
+        log.debug("实体转 VideoDTO id={} 分类key={}", v.getId(), dto.getCategoryKey());
         return dto;
     }
 
@@ -121,6 +127,7 @@ public class ContentService {
         dto.setCreatedAt(a.getCreatedAt());
         Blogger b = bloggers.get(a.getBloggerId());
         dto.setAuthorName(b != null ? b.getName() : null);
+        log.debug("实体转 ArticleDTO id={} 分类key={}", a.getId(), dto.getCategoryKey());
         return dto;
     }
 }

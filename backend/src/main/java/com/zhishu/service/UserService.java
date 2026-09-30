@@ -17,12 +17,14 @@ import com.zhishu.mapper.HistoryMapper;
 import com.zhishu.mapper.UserMapper;
 import com.zhishu.mapper.VideoMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -52,6 +54,7 @@ public class UserService {
                 .eq(Favorite::getTargetType, req.getTargetType())
                 .eq(Favorite::getTargetId, req.getTargetId()));
         if (count != null && count > 0) {
+            log.debug("收藏已存在，幂等跳过 uid={} {}#{}", userId, req.getTargetType(), req.getTargetId());
             return; // 幂等
         }
         Favorite f = new Favorite();
@@ -60,14 +63,16 @@ public class UserService {
         f.setTargetId(req.getTargetId());
         f.setCreatedAt(LocalDateTime.now());
         favoriteMapper.insert(f);
+        log.info("新增收藏 uid={} {}#{}", userId, req.getTargetType(), req.getTargetId());
     }
 
     public void removeFavorite(String targetType, Long targetId) {
         Long userId = UserContext.require();
-        favoriteMapper.delete(new LambdaQueryWrapper<Favorite>()
+        int deleted = favoriteMapper.delete(new LambdaQueryWrapper<Favorite>()
                 .eq(Favorite::getUserId, userId)
                 .eq(Favorite::getTargetType, targetType)
                 .eq(Favorite::getTargetId, targetId));
+        log.info("取消收藏 uid={} {}#{} 删除{}行", userId, targetType, targetId, deleted);
     }
 
     /** 收藏列表（按收藏时间倒序）。骨架先取 target_type=video。 */
@@ -109,10 +114,12 @@ public class UserService {
             history.setWatchedProgress(progress == null ? 0 : progress);
             history.setLastWatchedAt(now);
             historyMapper.insert(history);
+            log.info("新增观看历史 uid={} {}#{} 进度{}", userId, targetType, targetId, history.getWatchedProgress());
         } else {
             history.setWatchedProgress(progress == null ? history.getWatchedProgress() : progress);
             history.setLastWatchedAt(now);
             historyMapper.updateById(history);
+            log.debug("更新观看历史 uid={} {}#{} 进度{}", userId, targetType, targetId, history.getWatchedProgress());
         }
     }
 

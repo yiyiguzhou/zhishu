@@ -11,11 +11,13 @@ import com.zhishu.dto.WechatLoginRequest;
 import com.zhishu.entity.User;
 import com.zhishu.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -46,6 +48,7 @@ public class AuthService {
                 : "用户" + req.getPhone().substring(Math.max(0, req.getPhone().length() - 4)));
         user.setCreatedAt(LocalDateTime.now());
         userMapper.insert(user);
+        log.info("新用户注册 id={} 手机尾号{}", user.getId(), tail(req.getPhone()));
         return buildResponse(user);
     }
 
@@ -58,9 +61,12 @@ public class AuthService {
         if (user == null) {
             user = new User();
             user.setPhone(req.getPhone());
-            user.setNickname("用户" + req.getPhone().substring(Math.max(0, req.getPhone().length() - 4)));
+            user.setNickname("用户" + tail(req.getPhone()));
             user.setCreatedAt(LocalDateTime.now());
             userMapper.insert(user);
+            log.info("登录时自动注册 id={} 手机尾号{}", user.getId(), tail(req.getPhone()));
+        } else {
+            log.info("用户登录 id={}", user.getId());
         }
         return buildResponse(user);
     }
@@ -77,8 +83,15 @@ public class AuthService {
             user.setAvatar(req.getAvatar());
             user.setCreatedAt(LocalDateTime.now());
             userMapper.insert(user);
+            log.info("微信登录新用户 id={}", user.getId());
+        } else {
+            log.info("微信登录用户 id={}", user.getId());
         }
         return buildResponse(user);
+    }
+
+    private static String tail(String phone) {
+        return phone.substring(Math.max(0, phone.length() - 4));
     }
 
     public LoginResponse buildResponse(User user) {

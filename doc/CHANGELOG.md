@@ -45,6 +45,18 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-30 · 新增日志功能（请求日志 + 业务关键节点）
+
+- **请求层**：RequestLoggingFilter 记录方法/路径/状态码/耗时/登录用户，手机号脱敏（c87cd95）
+- **业务节点**：
+  - AuthService：注册/自动注册/登录/微信登录
+  - ContentService：热门聚合、分类/博主取视频计数（info）；实体逐条转 DTO（debug）
+  - UserService：收藏新增/幂等跳过/取消、历史新增/更新
+  - AssistantService：模型流式/非流式调用起止、异常
+  - Minio/OssMediaResolver：预签名生成（debug，仅记 bucket/key，不记 URL）
+- 分级原则：业务事件 info、高频逐条转换 debug；密码/验证码/密钥/预签名 URL 不日志
+- 验证：登录、收藏、聚合实测输出正确；debug 日志被 Nacos 远程 info 级别覆盖（符合预期）
+
 ## 2026-09-30 · 本地 / 线上环境正式切割
 
 - 本地：后端经 `scripts/dev-run.sh` 启动，连 .38 的 MySQL/Nacos/Redis，
