@@ -1,38 +1,38 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { List, Spin, Tag, Typography, Image, Progress, Card } from "antd";
+import { Row, Col, Spin, Typography, Image, Card, Progress } from "antd";
 import { api } from "../../api";
 import { useAuth } from "../../store/auth";
 import type { HistoryDTO } from "../../api/types";
 
 const { Text } = Typography;
 
-function HistoryItem({ item, onClick }: { item: HistoryDTO; onClick: () => void }) {
+/** 历史卡片：封面 + 标题 + 最近观看 + 进度，点击整卡续看进入详情。 */
+function HistoryCard({ item, onClick }: { item: HistoryDTO; onClick: () => void }) {
   return (
-    <List.Item onClick={onClick} style={{ cursor: "pointer" }}>
-      <List.Item.Meta
-        avatar={
-          <Image width={90} height={56} style={{ objectFit: "cover", borderRadius: 4 }}
-            src={item.cover || "https://placehold.co/90x56"} preview={false}
-            fallback="https://placehold.co/90x56" />
-        }
-        title={item.title || `内容 #${item.targetId}`}
+    <Card hoverable cover={
+      <Image src={item.cover || "https://placehold.co/400x225"} preview={false}
+        alt={item.title} fallback="https://placehold.co/400x225"
+        style={{ aspectRatio: "16/9", objectFit: "cover" }} />
+    } onClick={onClick}>
+      <Card.Meta
+        title={<Text ellipsis>{item.title || `内容 #${item.targetId}`}</Text>}
         description={
           <div>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              最近观看：{new Date(item.lastWatchedAt).toLocaleString()}
+              最近观看 {new Date(item.lastWatchedAt).toLocaleDateString()}
             </Text>
-            <div>
-              <Tag color="blue">{item.targetType}</Tag>
-            </div>
             {item.targetType === "video" && (
-              <Progress percent={Math.min(100, item.watchedProgress ?? 0)} size="small"
-                format={(p) => `进度 ${p}%`} />
+              <Progress
+                percent={Math.min(100, item.watchedProgress ?? 0)}
+                size="small"
+                style={{ marginBottom: 0, marginTop: 4 }}
+              />
             )}
           </div>
         }
       />
-    </List.Item>
+    </Card>
   );
 }
 
@@ -49,13 +49,26 @@ export default function UserHistory() {
   if (!list) return <Spin style={{ display: "block", margin: "60px auto" }} />;
 
   return (
-    <Card title="浏览历史" style={{ maxWidth: 720, margin: "0 auto" }}>
-      <List
-        dataSource={list}
-        renderItem={(item) => (
-          <HistoryItem item={item} onClick={() => item.targetType === "video" && go(`/video/${item.targetId}`)} />
-        )}
-      />
-    </Card>
+    <div>
+      <Typography.Title level={3} style={{ marginBottom: 16 }}>
+        浏览历史
+      </Typography.Title>
+      {list.length === 0 ? (
+        <Text type="secondary">还没有观看记录</Text>
+      ) : (
+        <Row gutter={[16, 16]}>
+          {list.map((item) => (
+            <Col key={`${item.targetType}-${item.targetId}`} xs={24} sm={12} md={8}>
+              <HistoryCard
+                item={item}
+                onClick={() =>
+                  item.targetType === "video" && go(`/video/${item.targetId}`)
+                }
+              />
+            </Col>
+          ))}
+        </Row>
+      )}
+    </div>
   );
 }

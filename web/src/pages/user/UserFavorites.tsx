@@ -1,12 +1,31 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { List, Spin, Typography, Image, Card, Tag, Empty } from "antd";
-import { HeartOutlined } from "@ant-design/icons";
+import { Row, Col, Spin, Typography, Image, Card, Empty } from "antd";
 import { api } from "../../api";
 import { useAuth } from "../../store/auth";
 import type { HistoryDTO } from "../../api/types";
 
 const { Text } = Typography;
+
+/** 收藏卡片：封面 + 标题 + 收藏时间，点击整卡进入对应详情页。 */
+function FavoriteCard({ item, onClick }: { item: HistoryDTO; onClick: () => void }) {
+  return (
+    <Card hoverable cover={
+      <Image src={item.cover || "https://placehold.co/400x225"} preview={false}
+        alt={item.title} fallback="https://placehold.co/400x225"
+        style={{ aspectRatio: "16/9", objectFit: "cover" }} />
+    } onClick={onClick}>
+      <Card.Meta
+        title={<Text ellipsis>{item.title || `内容 #${item.targetId}`}</Text>}
+        description={
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            收藏于 {new Date(item.lastWatchedAt).toLocaleDateString()}
+          </Text>
+        }
+      />
+    </Card>
+  );
+}
 
 export default function UserFavorites() {
   const go = useNavigate();
@@ -21,40 +40,32 @@ export default function UserFavorites() {
   if (!list) return <Spin style={{ display: "block", margin: "60px auto" }} />;
 
   return (
-    <Card title="我的收藏" style={{ maxWidth: 720, margin: "0 auto" }}>
+    <div>
+      <TitleText />
       {list.length === 0 ? (
-        <Empty description="还没有收藏内容" />
+        <Empty description="还没有收藏内容" style={{ marginTop: 80 }} />
       ) : (
-        <List
-          dataSource={list}
-          renderItem={(item) => (
-            <List.Item
-              onClick={() => item.targetType === "video" && go(`/video/${item.targetId}`)}
-              style={{ cursor: "pointer" }}
-            >
-              <List.Item.Meta
-                avatar={
-                  <Image
-                    width={90}
-                    height={56}
-                    style={{ objectFit: "cover", borderRadius: 4 }}
-                    src={item.cover || "https://placehold.co/90x56"}
-                    preview={false}
-                    fallback="https://placehold.co/90x56"
-                  />
-                }
-                title={item.title || `内容 #${item.targetId}`}
-                description={
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    收藏于 {new Date(item.lastWatchedAt).toLocaleString()}
-                  </Text>
+        <Row gutter={[16, 16]}>
+          {list.map((item) => (
+            <Col key={`${item.targetType}-${item.targetId}`} xs={24} sm={12} md={8}>
+              <FavoriteCard
+                item={item}
+                onClick={() =>
+                  item.targetType === "video" && go(`/video/${item.targetId}`)
                 }
               />
-              <Tag color="red" icon={<HeartOutlined />}>已收藏</Tag>
-            </List.Item>
-          )}
-        />
+            </Col>
+          ))}
+        </Row>
       )}
-    </Card>
+    </div>
+  );
+}
+
+function TitleText() {
+  return (
+    <Typography.Title level={3} style={{ marginBottom: 16 }}>
+      我的收藏
+    </Typography.Title>
   );
 }
