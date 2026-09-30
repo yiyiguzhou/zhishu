@@ -14,18 +14,22 @@ REGISTRY="crpi-rt3s48pkmbucmrvt.cn-beijing.personal.cr.aliyuncs.com"
 NAMESPACE="zhishu-ai"
 PLATFORMS="${PLATFORMS:-linux/amd64}"
 
+# 镜像版本：git 短提交号（可追溯/回退）+ latest（指向最近一次构建）
+GIT_TAG="$(git rev-parse --short HEAD)"
+
 echo ">> login ${REGISTRY}"
 docker login "${REGISTRY}"
 
 for svc in backend web; do
-  IMAGE="${REGISTRY}/${NAMESPACE}/${svc}:latest"
-  echo ">> build+push ${svc} [${PLATFORMS}] -> ${IMAGE}"
+  REPO="${REGISTRY}/${NAMESPACE}/${svc}"
+  echo ">> build+push ${svc} [${PLATFORMS}] tags: ${GIT_TAG}, latest"
   docker buildx build \
     --platform "${PLATFORMS}" \
     -f "deploy/${svc}/Dockerfile" \
-    -t "${IMAGE}" \
+    -t "${REPO}:${GIT_TAG}" \
+    -t "${REPO}:latest" \
     --push \
     .
 done
 
-echo "done: backend web pushed (${PLATFORMS}) to ${REGISTRY}/${NAMESPACE}"
+echo "done: backend web pushed (${PLATFORMS}, tags ${GIT_TAG} + latest) to ${REGISTRY}/${NAMESPACE}"
