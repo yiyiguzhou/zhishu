@@ -6,11 +6,14 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 **环境拓扑（当前）**
 
-| 角色 | 地址 | 说明 |
+| 环境 | 地址 | 说明 |
 |---|---|---|
-| 应用服务器（后端/Web） | 192.168.1.175 | macOS，Spring Boot + React |
-| 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos 2.5.4、MinIO（数据目录本机 `~/Documents/YouTube`）、Redis 7（AOF，供验证码等共享状态） |
-| NAS（可选，当前不使用） | 192.168.1.2 | WD My Cloud EX2 Ultra |
+| **线上 ECS**（北京） | 182.92.124.62 | Alibaba Cloud Linux 3，五容器：MySQL/Nacos/Redis/backend/web；镜像从 **ACR** 拉取，服务器不放源码 |
+| 本地开发机 | 192.168.1.175 | macOS，dev-run.sh 连 .38，视频走 MinIO |
+| 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos、MinIO（`~/Documents/YouTube`）、Redis 7 |
+| 对象存储（线上视频） | OSS zhishu-video-ai（北京） | 视频私有+预签名，covers 公共读；每日数据库备份存 db-backups/ |
+| 镜像仓库 | ACR `crpi-rt3s48pkmbucmrvt.../zhishu-ai/{backend,web}` | 个人版，北京 |
+| NAS（可选，当前不用） | 192.168.1.2 | WD My Cloud EX2 Ultra |
 
 **里程碑 Tags**：`baseline-skeleton`（骨架基线）→ `arch-nacos`（Nacos）→ `data-mysql`（MySQL）→ `media-minio-gateway`（视频网关）→ `feature-learning-assistant`（学习助手）
 
@@ -44,6 +47,16 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
   zhishu-redis-data，6379，无密码与开发默认值一致），本机实测 PING→PONG
 
 ---
+
+## 2026-09-30 · 线上改为 ACR 镜像部署（ECS 无源码）
+
+- 本机装 OrbStack 作为 Docker 环境；配国内镜像加速器（Docker Hub 直连不通）
+- 新增 Web 镜像（多阶段：node 构建 + nginx 托管，镜像内含 API 反代到 backend）
+- build-push-acr.sh 用 **buildx 交叉构建 linux/amd64**（本机 arm64、ECS amd64）并推送
+- ECS docker login ACR（SSH 需 `-t` 分配终端）；compose 改为拉 `${ACR_REGISTRY}/zhishu-ai/{backend,web}`，
+  去掉 build 与 web-dist 挂载；旧 nginx 孤儿容器移除（占用 443）
+- **线上库 favorite 表补迁移**（status/canceled_at）：代码已用新列、库结构未同步曾导致详情 500
+- 验证：页面/API 200，详情+OSS 预签名 206，收藏/取消全链路正常
 
 ## 2026-09-30 · 收藏改造：确认弹框 + 状态落库 + 软取消
 

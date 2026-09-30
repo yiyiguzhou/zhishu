@@ -1,12 +1,10 @@
-# 线上编排：Nacos + 后端（可多副本）+ Redis + Nginx（Web 静态文件由宿主机目录挂载）
+# 线上编排：所有应用镜像从阿里云 ACR 拉取（ECS 不构建、不放源码）。
+# 镜像由本机执行 scripts/deploy/build-push-acr.sh 推送。
+# 中间件（MySQL/Nacos/Redis）当前为同机容器；以后可平滑换成 RDS / 云 Nacos / 云 Redis。
 #
-# profile 说明（COMPOSE_PROFILES，默认 local-nacos,local-redis）：
-# - 单机：nacos/redis/mysql 均为本机容器
-# - HA：MySQL 用 RDS，Nacos 用 deploy/nacos/docker-compose.cluster.yml 集群或云托管，
-#   Redis 用云 Redis；此时 COMPOSE_PROFILES="" 只起 backend+nginx，
-#   并在 .env.prod 中把 NACOS_SERVER_ADDR_INTERNAL / REDIS_HOST_INTERNAL 指向云地址
-#
-# 用法：bash scripts/deploy/start.sh（BACKEND_REPLICAS=N 控制后端副本数）
+# 用法：
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml pull
+#   docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
 name: zhishu-prod
 
 services:
@@ -18,8 +16,7 @@ services:
       - mysql
     environment:
       - MODE=standalone
-      # 配置/用户信息存 MySQL 的 nacos_config 库（镜像 2.5.4 不再内置默认管理员，
-      # 也不自动初始化用户；管理员由 init-nacos 用户步骤手工建立）
+      # 配置/用户信息存 MySQL 的 nacos_config 库（镜像 2.5.4 不内置默认管理员）
       - SPRING_DATASOURCE_PLATFORM=mysql
       - MYSQL_SERVICE_HOST=mysql
       - MYSQL_SERVICE_PORT=3306
@@ -28,13 +25,12 @@ services:
       - MYSQL_SERVICE_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_SERVICE_DB_PARAM=characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false
       - NACOS_AUTH_ENABLE=true
-      # 必须 Base64 编码且解码后 >=32 字节，在 .env.prod 中重新生成
       - NACOS_AUTH_TOKEN=${NACOS_AUTH_TOKEN}
       - NACOS_AUTH_IDENTITY_KEY=zhishu
       - NACOS_AUTH_IDENTITY_VALUE=zhishu-nacos-internal
       - JVM_XMS=256m
       - JVM_XMX=256m
-      - JVM_XMN=128m    # 必须显式小于 XMX（镜像默认 512m，会导致堆配置非法、初始化静默失败）
+      - JVM_XMN=128m
     volumes:
       - nacos-logs:/home/nacos/logs
     restart: unless-stopped
@@ -49,39 +45,33 @@ services:
     restart: unless-stopped
 
   backend:
-    build:
-      context: ..
-      dockerfile: deploy/backend/Dockerfile
-    image: zhishu-backend:prod
-    # 不设 container_name：支持 --scale backend=N 起多副本
+    # 后端镜像（含 jar），从 ACR 拉取；版本标签可在 .env.prod 用 BACKEND_TAG 控制
+    image: ${ACR_REGISTRY}/zhishu-ai/backend:${BACKEND_TAG:-latest}
+    container_name: zhishu-backend
     env_file:
       - .env.prod
     environment:
-      # 容器网络内的默认地址，HA 时在 .env.prod 用 *_INTERNAL 变量改指云服务
       - NACOS_SERVER_ADDR=${NACOS_SERVER_ADDR_INTERNAL:-nacos:8848}
       - REDIS_HOST=${REDIS_HOST_INTERNAL:-redis}
       - REDIS_PORT=${REDIS_PORT_INTERNAL:-6379}
-      # 小规格机器限制后端堆大小（容器内默认会按 cgroup 给到 ~450M）
+      # 小规格机器限制后端堆
       - JAVA_TOOL_OPTIONS=-Xmx384m -Xms128m
     restart: unless-stopped
 
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: zhishu-nginx
+  web:
+    # Web 镜像（Nginx + 静态文件 + API 反代到 backend）
+    image: ${ACR_REGISTRY}/zhishu-ai/web:${WEB_TAG:-latest}
+    container_name: zhishu-web
     depends_on:
       - backend
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      # active.conf 为符号链接：域名前 -> nginx-http-only.conf（仅 HTTP），
-      # 证书就绪后 ln -sf nginx.conf active.conf 切 HTTPS
-      - ./nginx/active.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./web-dist:/usr/share/nginx/html:ro
-      - ./certs:/etc/nginx/certs:ro
+      # 证书目录（域名/证书就绪后启用 HTTPS 配置时使用；HTTP 阶段空目录无影响）
+      - ./certs:/etc/nginx/certs
     restart: unless-stopped
 
-  # 备选：同机 MySQL（仅不使用 RDS 时启用：COMPOSE_PROFILES 加 local-mysql）
   mysql:
     image: mysql:8.0
     container_name: zhishu-mysql

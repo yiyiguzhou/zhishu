@@ -23,6 +23,12 @@
 | 12 | 小程序 baseUrl 误指占位域名，列表无视频 | 小程序 |
 | 13 | 小规格 ECS 内存不足风险（2G） | 云资源 |
 | 14 | 助手 401：Key 在 Nacos 但后端占位符未取到 | 中间件 |
+| 15 | Docker Hub 拉基础镜像失败（Bad Gateway） | 云资源 |
+| 16 | 本机构建镜像 ECS 拉不到（arm64 vs amd64） | 云资源 |
+| 17 | ACR 用错域名，登录 403 | 云资源 |
+| 18 | ECS docker login 报非 TTY | 运维操作 |
+| 19 | 线上表结构未同步，详情 500（Unknown column status） | 数据库 |
+| 20 | 443 端口被孤儿容器占用 | 运维操作 |
 
 ---
 
@@ -205,6 +211,64 @@
   （写入 `.env.prod`，compose 经 env_file 注入），不依赖 Nacos 占位符链。
 - **验证/预防**：重建后端后 SSE 正常流式；密钥类配置优先用环境变量直注，
   少用"占位符引用另一前缀"的间接写法。
+
+---
+
+## 数据库（续）
+
+### 19. 线上表结构未随代码更新，详情 500（Unknown column 'status'）
+
+- **现象**：部署新代码后列表正常，但视频详情返回 `系统繁忙`；后端日志
+  `BadSqlGrammarException: Unknown column 'status' in 'where clause'`。
+- **根因**：favorite 表加了 status 列，但**只在开发库 .38 执行了 ALTER，线上
+  ECS 的 MySQL 没迁移**；代码查询新列、旧表没有，报错。
+- **解决**：对线上库执行同样的 `ALTER TABLE favorite ADD status ... ADD canceled_at ...`。
+- **验证/预防**：部署涉及表结构变更时，所有环境都要执行迁移；后续应引入
+  Flyway 等版本化迁移工具并纳入部署流程，避免漏环境。
+
+---
+
+## 云资源（续）
+
+### 15. Docker Hub 拉基础镜像失败（Bad Gateway）
+
+- **现象**：`FROM maven/node/nginx ...` 构建时报 `registry-1.docker.io ... Bad Gateway`。
+- **根因**：Docker Hub 国内直连不通。
+- **解决**：Docker 配置 registry-mirrors（daocloud / 1ms / xuanyuan 等）。
+  OrbStack 写 `~/.orbstack/config/docker.json`，重启引擎。
+
+### 16. 本机构建的镜像 ECS 拉不到（架构不匹配）
+
+- **现象**：ECS pull 报 `no matching manifest for linux/amd64`。
+- **根因**：本机 Apple Silicon 构建出 arm64 镜像，ECS 是 x86。
+- **解决**：`docker buildx build --platform linux/amd64 --push` 交叉构建；
+  需要多架构就传 `linux/amd64,linux/arm64`。
+
+### 17. ACR 用错域名导致登录 403
+
+- **现象**：`docker login registry.cn-beijing.aliyuncs.com` 返回 403。
+- **根因**：个人版账号实际用的是**专属实例域名**
+  `crpi-xxxx.cn-beijing.personal.cr.aliyuncs.com`，不是通用域名。
+- **解决**：以 ACR 控制台"访问凭证"页给出的域名/命令为准；compose 里
+  ACR_REGISTRY 用专属域名。
+
+---
+
+## 运维操作（续）
+
+### 18. ECS docker login 报 "non TTY device"
+
+- **现象**：`ssh host "docker login ..."` 报无法交互登录。
+- **根因**：非交互 SSH 没有分配伪终端。
+- **解决**：`ssh -t host "docker login ..."`（-t 强制 TTY），或先登录服务器再执行。
+- 备注：OrbStack 默认 credsStore 把密码存加密存储，`~/.docker/config.json`
+  里 auth 为空，无法直接复制凭证到 ECS，需在 ECS 上实际登录一次。
+
+### 20. 443 端口被孤儿容器占用
+
+- **现象**：启动新 web 容器报 `Bind for 0.0.0.0:443 failed: port is already allocated`。
+- **根因**：旧 nginx 服务改名/移除后，旧容器仍在运行并占用端口（compose 提示 orphan）。
+- **解决**：`docker rm -f <孤儿容器>`，再 `up -d`。
 
 ---
 
