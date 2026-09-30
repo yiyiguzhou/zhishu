@@ -45,6 +45,15 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-09-30 · 本地 / 线上环境正式切割
+
+- 本地：后端经 `scripts/dev-run.sh` 启动，连 .38 的 MySQL/Nacos/Redis，
+  视频走 MinIO（凭据从 gitignore 的 .dev-secrets 注入）；
+  OSS 凭据同文件保留，dev-run-oss.sh 可临时复现线上视频源
+- 线上：ECS 独立容器 + `.env.prod`，视频走 OSS；小程序 `USE_PROD` 开关区分两端
+- README 新增「环境划分」章节并更新启动方式
+- 验证：MinIO 预签名 206、Web 5173 与 API 200
+
 ## 2026-09-30 · 正式环境部署（进行中）· ECS 北京 182.92.124.62
 
 **背景**：备案完成，上线阿里云。资源：ECS 2核2G + 40G（Alibaba Cloud Linux 3），

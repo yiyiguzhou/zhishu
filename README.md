@@ -16,8 +16,8 @@ zhishu/
 
 ## 核心设计
 
-- **视频来源抽象 `StreamSource`**：后端按 `zhishu.media.mode` 在 `local`/`minio`/`nas` 间切换
-  （线上预留 `oss`）；接入 NAS/Jellyfin/Plex/OSS 只需新增一个 Resolver。
+- **视频来源抽象 `StreamSource`**：后端按 `zhishu.media.mode` 在 `local`/`minio`/`oss`/`nas`
+  间切换；新增存储（如别的对象存储）只需新增一个 Resolver。
 - **视频元数据模型**：video 经 `category_id` 外键关联 `category`（视频类别）、
   `blogger_id` 关联 `blogger`（作者），标签走 `tag` + `video_tag` 多对多。
 - **两种分类共用 category 表**：按技术(`video_tech`，harness/mcp/rag…) 或按博主(`blogger`)。
@@ -77,18 +77,32 @@ docker compose -f deploy/minio/docker-compose.yml up -d
 - 接口：`POST /api/assistant/chat`（SSE 流式）、`POST /api/assistant/chat/sync`（整体返回）
 - 多轮对话历史由客户端持有、随请求上送；系统提示词固化在 AssistantService
 
+## 环境划分（本地开发 / 线上）
+
+两套环境完全独立，**同一份代码、不同的配置来源**，互不影响：
+
+| | 本地开发 | 线上正式 |
+|---|---|---|
+| 代码位置 | 本机仓库 | ECS `/opt/zhishu`（182.92.124.62，北京） |
+| 配置来源 | application.yml 默认值 + `.dev-secrets`（gitignore） | ECS 上的 `/opt/zhishu/deploy/.env.prod`（gitignore） |
+| MySQL / Nacos / Redis | 局域网 **192.168.1.38** | ECS 上的独立容器 |
+| 视频源 | **MinIO**（.38，mode 默认 minio） | **阿里云 OSS**（mode=oss，北京 zhishu-video-ai） |
+| 后端启动 | `bash scripts/dev-run.sh` | `bash scripts/deploy/start.sh` |
+| 小程序后端 | `mini/app.js` 中 `USE_PROD=false`（局域网） | `USE_PROD=true`（线上域名） |
+
+- 线上部署的完整步骤见 [doc/DEPLOY.md](doc/DEPLOY.md)，排障见 [doc/TROUBLESHOOTING.md](doc/TROUBLESHOOTING.md)。
+- 想在本地临时复现线上视频源：`bash scripts/dev-run-oss.sh`（走 OSS）。
+
 ## 运行
 
-### 后端（默认 MySQL + MinIO 网关，数据持久化）
+### 后端（本地：连 .38 的 MySQL/Nacos/Redis/MinIO）
 ```bash
-# 环境首次：在 MySQL（默认 192.168.1.38，root/root）建库建表灌种子
+# 环境首次：在 MySQL（192.168.1.38，root/root）建库建表灌种子
 bash scripts/init-mysql.sh
-# 启动（端口 8080）；MinIO 网关需已在 .38 运行，凭据走环境变量
-cd backend
-MINIO_ACCESS_KEY=xxxx MINIO_SECRET_KEY=xxxx \
-  JAVA_HOME=/path/to/jdk17 mvn spring-boot:run
-# MySQL：MYSQL_HOST/MYSQL_USER/MYSQL_PASSWORD/MYSQL_DB
-# 不想依赖远程环境：SPRING_PROFILES_ACTIVE=h2 mvn spring-boot:run（H2 内存库，重启即重置）
+# 准备本机密钥（gitignore）：填 MinIO 凭据，需要时填 OSS 凭据
+# 然后一键启动（端口 8080）
+bash scripts/dev-run.sh
+# 不想依赖远程环境：SPRING_PROFILES_ACTIVE=h2 mvn -f backend/pom.xml spring-boot:run（H2 内存库）
 ```
 
 ### Web
@@ -98,8 +112,9 @@ npm install && npm run dev        # 端口 5173，/api 代理到 8080
 ```
 
 ### 微信小程序
-用微信开发者工具导入 `mini/` 目录，并勾选「详情-不校验合法域名」。
-本地后端地址在 `mini/app.js` 的 `globalData.baseUrl`（默认 `http://127.0.0.1:8080`）。
+用微信开发者工具导入 `mini/` 目录，并勾选「详情 → 本地设置 → 不校验合法域名」。
+后端地址由 `mini/app.js` 的 `USE_PROD` 开关控制：本地开发保持 `false`
+（局域网后端），上线时改为 `true`。
 
 ## 已实现接口
 - Auth：`sms-code`(占位) `register` `login` `wechat-login`
@@ -111,8 +126,8 @@ npm install && npm run dev        # 端口 5173，/api 代理到 8080
 - **MySQL（默认）**：`scripts/init-mysql.sh` 建库 `zhishu`(utf8mb4) 并执行 `db/schema.sql` + `data.sql`（种子博主/分类/视频/文章）。需要本机有 JDK17，不需要 mysql 客户端；库中已有表时拒绝重跑，`INIT_FORCE=1` 可强制重建（会清空数据）。
 - **H2**：切到 h2 profile 时自动执行同样的 schema/data 脚本，数据仅在进程内存中。
 
-## 后续规划（骨架已预留）
+## 后续规划
 - 真实短信服务替换 MockSmsService
-- 线上阿里云 OSS 视频源（OssMediaResolver，凭据走 Nacos）
-- 视频转码/封面、点赞评论、搜索、推荐
-- 生产 MyBatis 迁移(Flyway)、小程序真实AppID code2session
+- 域名 HTTPS 收尾、小程序正式提审
+- 视频转码/封面增强、点赞评论、搜索、推荐
+- 数据库迁移工具（Flyway）、小程序真实 AppID code2session
