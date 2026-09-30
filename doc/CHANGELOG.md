@@ -75,6 +75,9 @@ MySQL 8 自建容器（预算考虑，未购 RDS），视频走已有的北京 O
 本地代答误导，已用 check-host.net 外部节点确认。）
 - 新增 [doc/TROUBLESHOOTING.md](TROUBLESHOOTING.md)：汇总开发与部署的 13 个
   问题（现象/根因/解决/验证）及排障方法论，DEPLOY.md 加入口链接
+- 安全组 80/443 放行后外网全部打通：外部节点 /health 200，页面/API 200；
+  助手 401 定位为 Nacos 占位符链未取到 Key（Key 直调方舟 200），
+  改经 SPRING_AI_OPENAI_API_KEY 环境变量直注后 SSE 流式恢复正常
 
 ## 2026-09-29 · 新增业务与技术架构图
 

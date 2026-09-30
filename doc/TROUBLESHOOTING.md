@@ -22,6 +22,7 @@
 | 11 | Vite 代理 IPv4/IPv6 不匹配，Web 助手无回复 | 本地开发 |
 | 12 | 小程序 baseUrl 误指占位域名，列表无视频 | 小程序 |
 | 13 | 小规格 ECS 内存不足风险（2G） | 云资源 |
+| 14 | 助手 401：Key 在 Nacos 但后端占位符未取到 | 中间件 |
 
 ---
 
@@ -186,6 +187,24 @@
   - 视频字节流走 OSS/预签名，不占 ECS 内存。
 - **验证/预防**：`free -h` 观察；后续若加后端副本或流量上涨，优先升级到
   4G/8G。数据库长期建议迁 RDS。
+
+---
+
+## 中间件（续）
+
+### 14. 助手 401：Key 在 Nacos 里但后端没取到
+
+- **现象**：Nacos `zhishu-backend.yaml` 中已配 `spring.ai.openai.api-key`，
+  后端日志也显示 Load config success，但调助手返回
+  `模型服务调用失败：401 UNAUTHORIZED`；把同一个 Key 从服务器直调方舟
+  却返回 200。
+- **根因**：后端实际读取的是 `zhishu.assistant.api-key`，其值为占位符
+  `${spring.ai.openai.api-key:}`。该跨前缀占位符在配置绑定阶段未能可靠解析到
+  Nacos 远程配置中的值，`properties.getApiKey()` 实际为空，请求未带凭据。
+- **解决**：Key 直接以后端环境变量 `SPRING_AI_OPENAI_API_KEY` 注入
+  （写入 `.env.prod`，compose 经 env_file 注入），不依赖 Nacos 占位符链。
+- **验证/预防**：重建后端后 SSE 正常流式；密钥类配置优先用环境变量直注，
+  少用"占位符引用另一前缀"的间接写法。
 
 ---
 
