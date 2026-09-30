@@ -22,6 +22,8 @@ public class AuthInterceptor implements HandlerInterceptor {
             Long userId = jwtUtil.parseUserId(auth.substring(7));
             if (userId != null) {
                 UserContext.set(userId);
+                // 供 RequestLoggingFilter 在链返回后读取（此时 UserContext 已清理）
+                request.setAttribute("userId", userId);
             }
         }
         return true;
