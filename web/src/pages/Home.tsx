@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, Row, Col, Tabs, Spin, Tag, Typography, Image, Empty, Space } from "antd";
-import { FireOutlined } from "@ant-design/icons";
+import { FireOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { api } from "../api";
 import type { ArticleDTO, BloggerDTO, CategoryDTO, HotResponse, VideoDTO } from "../api/types";
 
@@ -120,11 +120,20 @@ export default function Home() {
           <VideoGrid videos={data?.hot.videos || []} />
         </Col>
         <Col xs={24} md={8}>
-          <Card title="热点文章" size="small">
+          <Card
+            title="热点文章"
+            size="small"
+            extra={
+              <ArrowRightOutlined
+                onClick={() => navigate("/articles")}
+                style={{ color: "#1677ff", cursor: "pointer" }}
+              />
+            }
+          >
             {(data?.hot.articles || []).map((a: ArticleDTO) => (
               <div
                 key={a.id}
-                onClick={() => navigate(`/articles/${a.id}`)}
+                onClick={() => navigate(`/articles/${a.id}`, { state: { fromHome: true } })}
                 style={{ padding: "6px 0", borderBottom: "1px solid #f0f0f0", cursor: "pointer" }}
               >
                 <Text ellipsis>{a.title}</Text>

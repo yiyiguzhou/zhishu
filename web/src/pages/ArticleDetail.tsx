@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Card, Spin, Button, Tag, Typography, Space, message } from "antd";
 import { ArrowLeftOutlined, LinkOutlined } from "@ant-design/icons";
 import { api } from "../api";
@@ -11,6 +11,7 @@ const { Title, Text } = Typography;
 export default function ArticleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [detail, setDetail] = useState<ArticleDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +36,11 @@ export default function ArticleDetail() {
       <Button
         type="text"
         icon={<ArrowLeftOutlined />}
-        onClick={() => navigate("/articles")}
+        onClick={() => {
+          // 来自首页热点区则返回首页，否则返回文章列表页
+          const fromHome = (location.state as any)?.fromHome;
+          navigate(fromHome ? "/" : "/articles");
+        }}
         style={{ marginBottom: 8 }}
       >
         返回

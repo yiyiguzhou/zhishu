@@ -1,39 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Row, Col, Spin, Empty, Typography, Space, Tag, Image } from "antd";
+import { Row, Col, Spin, Empty, Typography } from "antd";
 import { api } from "../api";
+import ArticleCard from "../components/ArticleCard";
 import type { ArticleDTO } from "../api/types";
-
-const { Text } = Typography;
-
-function ArticleCard({ article, onClick }: { article: ArticleDTO; onClick: () => void }) {
-  return (
-    <Card
-      hoverable
-      cover={
-        <Image
-          src={article.cover || "https://placehold.co/400x225"}
-          alt={article.title}
-          preview={false}
-          style={{ aspectRatio: "16/9", objectFit: "cover" }}
-          fallback="https://placehold.co/400x225"
-        />
-      }
-      onClick={onClick}
-      style={{ marginBottom: 8 }}
-    >
-      <Card.Meta
-        title={<Text ellipsis>{article.title}</Text>}
-        description={
-          <Space>
-            <Text type="secondary">{article.authorName || "未知作者"}</Text>
-            {article.categoryKey && <Tag color="geekblue">{article.categoryKey}</Tag>}
-          </Space>
-        }
-      />
-    </Card>
-  );
-}
 
 export default function Articles() {
   const navigate = useNavigate();
