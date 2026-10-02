@@ -8,6 +8,6 @@ App({
   globalData: {
     baseUrl: USE_PROD
       ? "https://your-domain.com"
-      : "http://192.168.1.175:8080"
+      : "http://192.168.1.177:8080"
   }
 });
