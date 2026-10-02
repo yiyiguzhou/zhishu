@@ -1,0 +1,32 @@
+# 马克的技术工作坊 —— 30 个新视频映射（已在库中的 5 个：Harness/RAG机制/Token/Codex第三方/编程全流程 不在此列，另行回填 blogger_id）
+# 格式：原文件名<TAB>视频slug<TAB>分类cat_key
+5分钟教会你如何本地部署DeepSeek-R1，无需联网，全程干货，没有一句废话.mp4	deploy-deepseek-r1-locally	fundamentals
+5种使用Deepseek打造可视化内容的方法，构建创意视觉图和专业数据分析报表，增强画面冲击力，可直接用在PPT，总结报告和视频解说中，总有一款适合你！.mp4	deepseek-visual-content-ideas	ai-trends
+6分钟快速上手最强学习工具NotebookLM（2025）.mp4	notebooklm-quick-start	ai-trends
+A2A协议深度解析（第 1 部分：双Agent同步调用场景）.mp4	a2a-protocol-part1	fundamentals
+A2A协议深度解析（第 2 部分：流式返回 + 多 Agent 场景）.mp4	a2a-protocol-part2	fundamentals
+Agent Skill 从使用到原理，一次讲清.mp4	agent-skill-explained	harness
+Agent 的概念、原理与构建模式 —— 从零打造一个简化版的 Claude Code.mp4	agent-concepts-and-patterns	harness
+Claude Code 从 0 到 1 全攻略 —— MCP ⧸ SubAgent ⧸ Agent Skill ⧸ Hook ⧸ 图片 ⧸ 上下文处理⧸ 后台任务 ⧸ 权限 .......mp4	claude-code-complete-guide	ai-coding
+Codex 从 0 到 1 全攻略 - Annotate ⧸ Fork ⧸ Archive ⧸ Plan ⧸ Plugin ⧸ Skill ⧸ Automation ⧸ Mobile .......mp4	codex-complete-guide	ai-coding
+Context Engineering：概念与技术实现深度解析.mp4	context-engineering-deep-dive	harness
+DeepSeek R1 真的那么强吗？客观评测 R1 与 o1 在编程、推理方面的效果.mp4	deepseek-r1-vs-o1-review	ai-trends
+GPT 4o 图片生成能力评测.mp4	gpt4o-image-generation-review	ai-trends
+Keynote 动画制作全流程，以及我对 AI 动画的一些看法.mp4	keynote-animation-workflow	ai-trends
+MCP 与 Function Calling 到底什么关系 —— 以及为什么我认为大部分人的观点都是错误的.mp4	mcp-vs-function-calling	mcp
+MCP终极指南   带你深入掌握MCP（进阶篇）.mp4	mcp-guide-advanced	mcp
+MCP终极指南 - 从原理到实战，带你深入掌握MCP（基础篇）.mp4	mcp-guide-basics	mcp
+MCP终极指南 - 番外篇：抓包分析 Cline 与模型的交互协议（内含 Agent 的实现原理）.mp4	mcp-guide-extra-capture	mcp
+Manus案例深度解析 - 以及我对它的看法.mp4	manus-case-analysis	ai-trends
+Midjourney 2025 网页版完整教学 - 从基础到进阶.mp4	midjourney-2025-web-tutorial	ai-trends
+OpenAI 的 RAG 范例，无需向量化.mp4	openai-rag-example	rag
+Temperature & Top-p：掌控大模型的创造力开关.mp4	temperature-top-p	prompt
+o3-mini-high编程与推理能力评测.mp4	o3-mini-high-review	ai-trends
+o3、o4 mini high数学和推理能力评测.mp4	o3-o4-mini-high-math-review	ai-trends
+为什么越来越多的人抛弃 MCP，转向 CLI？.mp4	why-cli-over-mcp	mcp
+从 LLM 到 Agent Skill，一期视频带你打通底层逻辑！.mp4	llm-to-agent-skill	harness
+使用 Cursor 和 Claude3 7 10分钟构建产品原型图和iOS应用，无需写一行代码.mp4	cursor-claude-prototype	ai-coding
+使用 DeepSeek R1 与 AnythingLLM 搭建本地知识库.mp4	deepseek-anythingllm-rag	rag
+使用Python构建RAG系统 —— 用代码还原 RAG系统的每个细节.mp4	python-rag-from-scratch	rag
+四大推理大模型数学与编程能力评测   Grok3、Claude3 7、DeepSeep R1、o3 mini high 到底谁的推理能力最强？.mp4	top4-reasoning-models-review	ai-trends
+把 Gemini Flash 2 0 当 PS 使用的正确方法.mp4	gemini-flash-as-photoshop	ai-trends

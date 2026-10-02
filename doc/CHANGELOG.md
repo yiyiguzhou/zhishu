@@ -9,7 +9,7 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 | 环境 | 地址 | 说明 |
 |---|---|---|
 | **线上 ECS**（北京） | 182.92.124.62 | Alibaba Cloud Linux 3，五容器：MySQL/Nacos/Redis/backend/web；镜像从 **ACR** 拉取，服务器不放源码 |
-| 本地开发机 | 192.168.1.175 | macOS，dev-run.sh 连 .38，视频走 MinIO |
+| 本地开发机 | 192.168.1.177 | macOS，dev-run.sh 连 .38，视频走 MinIO |
 | 数据/网关机 | 192.168.1.38 | Mac mini：MySQL 8、Nacos、MinIO（`~/Documents/YouTube`）、Redis 7 |
 | 对象存储（线上视频） | OSS zhishu-video-ai（北京） | 视频私有+预签名，covers 公共读；每日数据库备份存 db-backups/ |
 | 镜像仓库 | ACR `crpi-rt3s48pkmbucmrvt.../zhishu-ai/{backend,web}` | 个人版，北京 |
@@ -18,6 +18,20 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 **里程碑 Tags**：`baseline-skeleton`（骨架基线）→ `arch-nacos`（Nacos）→ `data-mysql`（MySQL）→ `media-minio-gateway`（视频网关）→ `feature-learning-assistant`（学习助手）
 
 ---
+
+## 2026-10-02 · 新增作者「马克的技术工作坊」与 30 个视频（dev）
+
+**背景**：源视频按作者分目录放在 .38 的 `~/Documents/YouTube/<作者>/`，本次把目录名作者「马克的技术工作坊」及其视频集入库、接上技术分类与封面，先只同步 dev（MinIO + MySQL），线上（OSS/ECS）暂缓。
+
+**变更内容**：
+
+- 新增导入脚本 `scripts/ingest-videos.sh`：扫作者目录 → ffmpeg 抽封面（blackdetect 跳过片头黑场，探测失败兜底第 3 秒，640 宽）→ mc 上传 MinIO → 生成增量 SQL；支持 `--covers-only` 单独重抽封面；配映射文件 `scripts/ingest/mark-tech-workshop.map.tsv`（`文件名 → slug → cat_key`），以后加作者一行命令即可
+- 对象 key 约定：`<作者slug>/<视频slug>.mp4`（作者维度前缀防撞名；ASCII slug 避开中文/`#` 等 URL 编码坑）
+- 新增博主 `马克的技术工作坊`（id=5）+「按博主」分类 `blogger_5`（id=12）；回填原 6 条中属该作者的 5 条 blogger_id，新增 30 条视频（id 7~36，覆盖 7 个技术分类，含 ffprobe 真实时长）
+- `data.sql` 种子同步上述作者/分类/视频；封面用 dev MinIO `covers/mark-tech-workshop/`（切线上时随 OSS 一并迁移）
+- 修复 dev 机 IP 漂移：`mini/app.js` baseUrl `192.168.1.175` → `.177`（DHCP 变动导致小程序页面无数据）
+
+**验证**：30 个 mp4 + 30 张封面已入 MinIO；dev MySQL `blogger=5`、`video.blogger_id=5` 计 35 条；`/api/bloggers`、`/api/bloggers/5/videos`(35)、`/api/videos/7`（含 MinIO 预签名 playUrl、分类「基础概念」）均 200。
 
 ## 2026-09-28 · 线上部署改造（分支 feat/prod-deploy，合入 v1 前定稿）
 
