@@ -1,0 +1,15 @@
+<view class="page">
+  <view class="card">
+    <view class="section-title">📄 热点文章</view>
+    <view wx:for="{{list}}" wx:key="id" class="article-card" data-id="{{item.id}}" bindtap="goDetail">
+      <image class="article-cover" src="{{item.cover}}" mode="aspectFill" />
+      <view class="article-info">
+        <view class="article-title">{{item.title}}</view>
+        <view class="article-meta">{{item.authorName}}<text wx:if="{{item.categoryKey}}"> · {{item.categoryKey}}</text></view>
+        <view wx:if="{{item.summary}}" class="article-summary">{{item.summary}}</view>
+      </view>
+    </view>
+    <view wx:if="{{loading}}" class="loading">加载中...</view>
+    <view wx:if="{{!loading && !list.length}}" class="empty">暂无文章</view>
+  </view>
+</view>

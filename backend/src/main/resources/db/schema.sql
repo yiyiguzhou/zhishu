@@ -82,11 +82,19 @@ CREATE TABLE article (
     blogger_id   BIGINT       DEFAULT NULL,
     cover        VARCHAR(512) DEFAULT NULL,
     content_url  VARCHAR(1024) DEFAULT NULL,
+    source_url   VARCHAR(1024) DEFAULT NULL COMMENT '原文链接（人工提供，溯源）',
+    source_title VARCHAR(512)  DEFAULT NULL COMMENT '来源标题',
+    author_name  VARCHAR(64)  DEFAULT NULL COMMENT '外部来源作者（弱关联，不建外键）',
+    summary      VARCHAR(1024) DEFAULT NULL COMMENT '列表页 AI 摘要',
+    content_md   TEXT          DEFAULT NULL COMMENT '正文 Markdown',
     category_key VARCHAR(64)  DEFAULT NULL,
     hot_score    INT          DEFAULT 0,
+    published_at DATETIME     DEFAULT NULL COMMENT '发布时间（衰减依据，空则用 created_at）',
+    status       VARCHAR(16)  NOT NULL DEFAULT 'published' COMMENT 'published | draft',
     created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    KEY idx_article_category (category_key)
+    KEY idx_article_category (category_key),
+    KEY idx_article_status (status, published_at)
 );
 
 CREATE TABLE favorite (

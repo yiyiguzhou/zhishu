@@ -1,6 +1,7 @@
 import client from "./client";
 import type {
   ArticleDTO,
+  ArticleDetailDTO,
   BloggerDTO,
   CategoryDTO,
   HistoryDTO,
@@ -32,6 +33,11 @@ export const api = {
 
   // 视频
   videoDetail: (id: number) => client.get(`/api/videos/${id}`) as Promise<VideoDetailDTO>,
+
+  // 文章
+  articles: (category?: string, limit = 20) =>
+    client.get("/api/articles", { params: { category, limit } }) as Promise<ArticleDTO[]>,
+  articleDetail: (id: number) => client.get(`/api/articles/${id}`) as Promise<ArticleDetailDTO>,
 
   // 用户中心
   profile: () => client.get("/api/user/profile") as Promise<UserDTO>,

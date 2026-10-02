@@ -19,6 +19,20 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-10-02 · AI 热点文章功能（总结上墙 + Web/小程序展示）
+
+**背景**：文章此前只有骨架（无正文字段，content_url 为 example.com 占位），本次不照抄原文，接入大模型自动总结后在自有平台展示，覆盖 Web 与小程序。
+
+**变更内容**：
+
+- `article` 表新增 `source_url/source_title/author_name/summary/content_md/published_at/status` 与索引 `idx_article_status`，规范化存 AI 总结正文；6 条占位 seed 回填真实 Markdown
+- 后端：`ArticleService`（列表/详情 + `hot_score * exp(-0.05*ageDays)` 时间衰减排序）、`ArticleSummaryService`（复用火山方舟生成 Markdown 总结）、`ArticleController`（`/api/articles` 列表、`/{id}` 详情含 `contentMd/contentHtml`、`POST /ingest` AI 录入）；flexmark 做 md→html
+- Web：`react-markdown`+`remark-gfm`；`Markdown` 组件（简约内联排版）、`Articles` 列表页、`ArticleDetail` 详情页、路由 `/articles[/:id]`、导航菜单「热点文章」、首页文章行可点
+- 小程序：`pages/articles` 列表 + `pages/article-detail` 详情（`<rich-text>` 渲染后端 contentHtml）
+- 迁移 SQL 应用于 dev(.38) 与 prod(ECS) 两库（prod 前 dump 备份）
+
+**验证**：H2 与 dev 两轮 `/api/articles` 列表（时间衰减排序正确）、`/{id}` 详情 md→HTML 正确；Web `tsc -b`+`vite build` 过、`/articles` SPA 200 且代理通；小程序 `node --check` 过。
+
 ## 2026-10-02 · 马克视频 OSS 迁移 + 标签 + 文章
 
 **背景**：30 个视频之前只放 dev MinIO，本次一并迁到 OSS 走预签名播放路径；同时补标签关联与补充文章。

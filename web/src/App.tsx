@@ -5,6 +5,8 @@ import zhCN from "antd/locale/zh_CN";
 import MainLayout from "./layouts/MainLayout";
 import Home from "./pages/Home";
 import Detail from "./pages/Detail";
+import Articles from "./pages/Articles";
+import ArticleDetail from "./pages/ArticleDetail";
 import Login from "./pages/Login";
 import UserCenter from "./pages/user/UserCenter";
 import UserHistory from "./pages/user/UserHistory";
@@ -33,6 +35,8 @@ export default function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
             <Route path="video/:id" element={<Detail />} />
+            <Route path="articles" element={<Articles />} />
+            <Route path="articles/:id" element={<ArticleDetail />} />
             <Route path="login" element={<Login />} />
             <Route path="user" element={<UserCenter />} />
             <Route path="user/history" element={<UserHistory />} />

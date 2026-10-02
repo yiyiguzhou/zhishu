@@ -6,7 +6,9 @@
     "pages/user/index",
     "pages/history/index",
     "pages/favorites/index",
-    "pages/chat/index"
+    "pages/chat/index",
+    "pages/articles/index",
+    "pages/article-detail/index"
   ],
   "window": {
     "navigationBarBackgroundColor": "#ffffff",

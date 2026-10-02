@@ -72,5 +72,8 @@ Page({
   goDetail(e) {
     wx.navigateTo({ url: "/pages/detail/index?id=" + e.currentTarget.dataset.id });
   },
+  goArticleDetail(e) {
+    wx.navigateTo({ url: "/pages/article-detail/index?id=" + e.currentTarget.dataset.id });
+  },
   fmtDuration
 });

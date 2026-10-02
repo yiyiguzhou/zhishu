@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { Layout, Menu, Button, Space, Dropdown } from "antd";
-import { UserOutlined, HomeOutlined, LogoutOutlined } from "@ant-design/icons";
+import { UserOutlined, HomeOutlined, LogoutOutlined, ReadOutlined } from "@ant-design/icons";
 import { useAuth } from "../store/auth";
 import ChatAssistant from "../components/ChatAssistant";
 
@@ -20,7 +20,10 @@ export default function MainLayout() {
           theme="dark"
           mode="horizontal"
           selectedKeys={[]}
-          items={[{ key: "home", icon: <HomeOutlined />, label: <Link to="/">首页</Link> }]}
+          items={[
+            { key: "home", icon: <HomeOutlined />, label: <Link to="/">首页</Link> },
+            { key: "articles", icon: <ReadOutlined />, label: <Link to="/articles">热点文章</Link> }
+          ]}
           style={{ flex: 1, minWidth: 0 }}
         />
         <Space>

@@ -16,7 +16,14 @@ public class Article {
     private Long bloggerId;
     private String cover;
     private String contentUrl;
+    private String sourceUrl;
+    private String sourceTitle;
+    private String authorName;
+    private String summary;
+    private String contentMd;
     private String categoryKey;
     private Integer hotScore;
+    private LocalDateTime publishedAt;
+    private String status;
     private LocalDateTime createdAt;
 }

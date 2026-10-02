@@ -35,6 +35,24 @@ export interface ArticleDTO {
   categoryKey?: string;
   hotScore?: number;
   authorName?: string;
+  summary?: string;
+  publishedAt?: string;
+  createdAt: string;
+}
+
+export interface ArticleDetailDTO {
+  id: number;
+  title: string;
+  cover?: string;
+  summary?: string;
+  contentMd?: string;
+  contentHtml?: string;
+  sourceUrl?: string;
+  sourceTitle?: string;
+  authorName?: string;
+  categoryKey?: string;
+  hotScore?: number;
+  publishedAt?: string;
   createdAt: string;
 }
 

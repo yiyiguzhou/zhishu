@@ -78,13 +78,45 @@ INSERT INTO tag (id, name) VALUES
   (6, 'MCP'),
   (7, '提示词');
 
-INSERT INTO article (id, title, blogger_id, cover, content_url, category_key, hot_score) VALUES
-  (1, '2026年做RAG，这些坑别再踩了', 1, 'https://placehold.co/400x225?text=Article', 'https://example.com/articles/rag-pits', 'rag', 880),
-  (2, 'MCP能让Claude接入你的数据库吗', 3, 'https://placehold.co/400x225?text=Article', 'https://example.com/articles/mcp-db', 'mcp', 720),
-  (3, 'Agent框架选型指南', 2, 'https://placehold.co/400x225?text=Article', 'https://example.com/articles/agent-select', 'harness', 690),
-  (4, 'MCP协议深度解析：从入门到实战', 5, 'https://placehold.co/400x225?text=MCP+Deep', 'https://example.com/articles/mcp-deep-dive', 'mcp', 850),
-  (5, 'Agent开发实战：用Claude Code打造你的第一个智能体', 5, 'https://placehold.co/400x225?text=Agent+Dev', 'https://example.com/articles/agent-dev', 'harness', 920),
-  (6, 'RAG系统优化指南：从检索到生成的完整链路', 5, 'https://placehold.co/400x225?text=RAG+Guide', 'https://example.com/articles/rag-guide', 'rag', 780);
+INSERT INTO article (id, title, blogger_id, cover, content_url, source_url, source_title, author_name, summary, content_md, category_key, hot_score, published_at, status) VALUES
+  (1, '2026年做RAG，这些坑别再踩了', 1, 'https://placehold.co/400x225?text=Article', 'https://example.com/articles/rag-pits', 'https://example.com/articles/rag-pits', NULL, NULL, '检索质量、切块策略与评估缺失，是 RAG 落地最常见的三大坑。', '## 三大坑
+- **检索质量**：向量召回不相关片段，污染上下文
+- **切块策略**：过粗或过细都会拉低召回
+- **评估缺失**：没有 ground truth 就无法量化效果
+
+**建议**：先搭建评估集，再迭代检索与切块策略。', 'rag', 880, '2026-09-28 10:00:00', 'published'),
+  (2, 'MCP能让Claude接入你的数据库吗', 3, 'https://placehold.co/400x225?text=Article', 'https://example.com/articles/mcp-db', 'https://example.com/articles/mcp-db', NULL, NULL, 'MCP 把工具调用标准化，让 Claude 能经 MCP server 直连数据库。', '## 核心思路
+MCP（Model Context Protocol）把工具调用标准化，Claude 可经 MCP server 直连数据库。
+
+**要点**
+- 只读优先，写操作加白名单
+- 连接信息走环境变量，不入库
+- 返回结果截断，防止超上下文', 'mcp', 720, '2026-09-29 10:00:00', 'published'),
+  (3, 'Agent框架选型指南', 2, 'https://placehold.co/400x225?text=Article', 'https://example.com/articles/agent-select', 'https://example.com/articles/agent-select', NULL, NULL, '主流 Agent 框架的能力边界与选型要点对比。', '## 选型维度
+- **编排能力**：多 Agent 协作与工具编排
+- **生态**：插件与社区成熟度
+- **可控性**：状态可观测、可回滚
+
+**结论**：先按场景反推框架，避免过度设计。', 'harness', 690, '2026-09-30 10:00:00', 'published'),
+  (4, 'MCP协议深度解析：从入门到实战', 5, 'https://placehold.co/400x225?text=MCP+Deep', 'https://example.com/articles/mcp-deep-dive', 'https://example.com/articles/mcp-deep-dive', NULL, NULL, '从协议构成到代码级实战，讲清 MCP 的完整链路。', '## 协议构成
+MCP 由 host、client、server 三部分组成，走 JSON-RPC 通信。
+
+**实战要点**
+- 定义 tools 与 resources
+- 处理 initialize 握手
+- 权限与超时治理', 'mcp', 850, '2026-10-01 09:00:00', 'published'),
+  (5, 'Agent开发实战：用Claude Code打造你的第一个智能体', 5, 'https://placehold.co/400x225?text=Agent+Dev', 'https://example.com/articles/agent-dev', 'https://example.com/articles/agent-dev', NULL, NULL, '用 Claude Code 从零构建一个可用的智能体，含关键取舍。', '## 实战路径
+- **明确边界**：把任务拆成可验证的子步骤
+- **工具设计**：工具即能力，围绕目标定义
+- **上下文管理**：精简注入，避免噪声
+
+**收尾**：健壮的错误处理与日志，是可维护的关键。', 'harness', 920, '2026-10-01 10:00:00', 'published'),
+  (6, 'RAG系统优化指南：从检索到生成的完整链路', 5, 'https://placehold.co/400x225?text=RAG+Guide', 'https://example.com/articles/rag-guide', 'https://example.com/articles/rag-guide', NULL, NULL, '覆盖检索、重排、生成三段的 RAG 系统化优化清单。', '## 三段优化
+- **检索**：混合召回 + 元数据过滤
+- **重排**：rerank 模型提升相关度
+- **生成**：约束引用、抑制幻觉
+
+**落地顺序**：先评估、再优化检索、最后调生成。', 'rag', 780, '2026-10-02 09:00:00', 'published');
 
 INSERT INTO video_tag (video_id, tag_id) VALUES
   (10, 4), (10, 5), (11, 4), (11, 5),

@@ -10,5 +10,7 @@ public class ArticleDTO {
     private String categoryKey;
     private Integer hotScore;
     private String authorName;
+    private String summary;
+    private java.time.LocalDateTime publishedAt;
     private java.time.LocalDateTime createdAt;
 }

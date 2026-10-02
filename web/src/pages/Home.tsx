@@ -64,6 +64,7 @@ interface Data {
 }
 
 export default function Home() {
+  const navigate = useNavigate();
   const [data, setData] = useState<Data | null>(null);
   const [techVideos, setTechVideos] = useState<VideoDTO[]>([]);
   const [bloggerVideos, setBloggerVideos] = useState<VideoDTO[]>([]);
@@ -121,7 +122,11 @@ export default function Home() {
         <Col xs={24} md={8}>
           <Card title="热点文章" size="small">
             {(data?.hot.articles || []).map((a: ArticleDTO) => (
-              <div key={a.id} style={{ padding: "6px 0", borderBottom: "1px solid #f0f0f0" }}>
+              <div
+                key={a.id}
+                onClick={() => navigate(`/articles/${a.id}`)}
+                style={{ padding: "6px 0", borderBottom: "1px solid #f0f0f0", cursor: "pointer" }}
+              >
                 <Text ellipsis>{a.title}</Text>
                 <Text type="secondary" style={{ float: "right" }}>
                   {a.authorName}
