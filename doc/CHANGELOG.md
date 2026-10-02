@@ -19,6 +19,18 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-10-02 · 马克视频 OSS 迁移 + 标签 + 文章
+
+**背景**：30 个视频之前只放 dev MinIO，本次一并迁到 OSS 走预签名播放路径；同时补标签关联与补充文章。
+
+**变更内容**：
+
+- 媒体迁移：30 mp4 + 30 封面通过 ossutil 上传到 OSS `zhishu-video-ai/mark-tech-workshop/`；dev 库 30 条视频 `source_type` 与 `cover` 都已切为 OSS（预签名播放，流量不经过后端）
+- 25 条 video_tag 关联：AI 编程类 8、MCP 5、RAG 6（含向量数据库+Embedding）、Agent 3、提示词 2、A2A/Agent 1——覆盖 15 个视频
+- 3 篇新文章（MCP 协议/AI 编程 Agent 实战/RAG 优化），均属马克（blogger_id=5）
+- `data.sql` 统一：cover 均为 OSS 地址、source_type=oss、注释更新；新增 tag 关联与文章种子
+- 验证：OSS 30+30 对象清查；dev MySQL `oss` 源 30 条 + video_tag 25 条 + article 6 条；/api/videos/12 详情含标签和 OSS 预签名 playUrl
+
 ## 2026-10-02 · 新增作者「马克的技术工作坊」与 30 个视频（dev）
 
 **背景**：源视频按作者分目录放在 .38 的 `~/Documents/YouTube/<作者>/`，本次把目录名作者「马克的技术工作坊」及其视频集入库、接上技术分类与封面，先只同步 dev（MinIO + MySQL），线上（OSS/ECS）暂缓。
