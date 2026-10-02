@@ -33,6 +33,8 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 **验证**：白名单外域名 403、参数缺失 400、白名单内真实 URL（ruanyifeng.com）fetch=true 自动抓取正文 → AI 生成 3913 字节 Markdown 落库、sourceTitle 回填「curl 的用法指南 - 阮一峰的网络日志」。
 
+**JS 渲染补充修复**：Chrome `--headless --dump-dom` 在 mac 上输出完 HTML 后不主动退出（受代理/后台请求拖累），原 `waitFor(超时)` 必超时回退静态。改为后台线程读到 `</html>` 即判成功并主动 `destroyForcibly`，补 `--no-proxy-server`/`--disable-background-networking`。验证：render-enabled=true 下抓 example.com，日志 `jsRender=true`（此前为 false 回退）。
+
 ## 2026-10-02 · AI 热点文章功能（总结上墙 + Web/小程序展示）
 
 **背景**：文章此前只有骨架（无正文字段，content_url 为 example.com 占位），本次不照抄原文，接入大模型自动总结后在自有平台展示，覆盖 Web 与小程序。
