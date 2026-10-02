@@ -19,6 +19,20 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-10-02 · 文章正文自动抓取（URL → 正文 → AI 总结）
+
+**背景**：此前 AI 热点文章需人工粘贴原文正文。本次改为给 URL 自动抓取网页正文再总结。约束：域名白名单防 SSRF；本地库提取正文（省 token）；JS 渲染只在 dev 跑（线上 ECS 内存小，无头浏览器默认关）。
+
+**变更内容**：
+
+- 新增抓取层 `service/crawl/`：`UrlGuard`（白名单 + DNS 解析拒绝回环/私网 + 重定向上限，防 SSRF/DNS rebinding）、`StaticHtmlFetcher`（jsoup）、`JsRenderFetcher`（系统 Chrome `--headless --dump-dom`，`render-enabled` 时启用）、`ContentExtractor`（正文密度启发式提取）、`ArticleFetcher`（编排：校验→JS 回退静态→提取）
+- 配置：`zhishu.crawler` 块（`allowed-domains`/`allow-subdomains`/`render-enabled`/超时/上限），`deploy/.env.prod.example` 加 `CRAWLER_*`（线上 render=false）
+- `ArticleIngestRequest` 加 `fetch` 字段：`fetch=true` 走 sourceUrl 自动抓取（抓取标题未给时回填 sourceTitle），否则 rawText 人工粘贴——向后兼容
+- `ArticleService.ingest` 注入 `ArticleFetcher`，复用 `ArticleSummaryService.summarize`
+- 依赖：jsoup 1.18
+
+**验证**：白名单外域名 403、参数缺失 400、白名单内真实 URL（ruanyifeng.com）fetch=true 自动抓取正文 → AI 生成 3913 字节 Markdown 落库、sourceTitle 回填「curl 的用法指南 - 阮一峰的网络日志」。
+
 ## 2026-10-02 · AI 热点文章功能（总结上墙 + Web/小程序展示）
 
 **背景**：文章此前只有骨架（无正文字段，content_url 为 example.com 占位），本次不照抄原文，接入大模型自动总结后在自有平台展示，覆盖 Web 与小程序。

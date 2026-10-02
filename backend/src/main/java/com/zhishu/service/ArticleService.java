@@ -5,10 +5,12 @@ import com.zhishu.common.BusinessException;
 import com.zhishu.dto.ArticleDTO;
 import com.zhishu.dto.ArticleDetailDTO;
 import com.zhishu.dto.ArticleIngestRequest;
+import com.zhishu.dto.FetchResult;
 import com.zhishu.entity.Article;
 import com.zhishu.entity.Blogger;
 import com.zhishu.mapper.ArticleMapper;
 import com.zhishu.mapper.BloggerMapper;
+import com.zhishu.service.crawl.ArticleFetcher;
 import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.data.MutableDataSet;
@@ -40,6 +42,7 @@ public class ArticleService {
     private final ArticleMapper articleMapper;
     private final BloggerMapper bloggerMapper;
     private final ArticleSummaryService summaryService;
+    private final ArticleFetcher articleFetcher;
 
     /** 文章列表：仅 published，hot_score + 时间衰减排序。 */
     public List<ArticleDTO> list(String categoryKey, int limit) {
@@ -89,20 +92,35 @@ public class ArticleService {
         return dto;
     }
 
-    /** AI 总结录入：调用大模型生成 content_md + summary，存库返回新 id。 */
+    /** AI 总结录入：支持 rawText 人工粘贴 或 fetch=true 自动抓取 sourceUrl。 */
     public Long ingest(ArticleIngestRequest req) {
         if (req.getTitle() == null || req.getTitle().isBlank()) {
             throw new BusinessException(400, "title 不能为空");
         }
-        if (req.getRawText() == null || req.getRawText().isBlank()) {
-            throw new BusinessException(400, "rawText 不能为空");
+        boolean fetch = Boolean.TRUE.equals(req.getFetch());
+        String sourceUrl = req.getSourceUrl();
+        String rawText = req.getRawText();
+
+        if (fetch) {
+            if (sourceUrl == null || sourceUrl.isBlank()) {
+                throw new BusinessException(400, "fetch=true 时 sourceUrl 不能为空");
+            }
+            FetchResult fr = articleFetcher.fetch(sourceUrl);
+            rawText = fr.getContent();
+            // 抓取的标题在请求未给 sourceTitle 时回填
+            if ((req.getSourceTitle() == null || req.getSourceTitle().isBlank()) && fr.getTitle() != null) {
+                req.setSourceTitle(fr.getTitle());
+            }
+        } else if (rawText == null || rawText.isBlank()) {
+            throw new BusinessException(400, "rawText 不能为空（或设 fetch=true 自动抓取）");
         }
-        String contentMd = summaryService.summarize(req.getRawText());
+
+        String contentMd = summaryService.summarize(rawText);
         Article a = new Article();
         a.setTitle(req.getTitle());
         a.setBloggerId(req.getBloggerId());
         a.setCover(req.getCover());
-        a.setSourceUrl(req.getSourceUrl());
+        a.setSourceUrl(sourceUrl);
         a.setSourceTitle(req.getSourceTitle());
         a.setAuthorName(req.getAuthorName());
         a.setCategoryKey(req.getCategoryKey());
@@ -112,7 +130,7 @@ public class ArticleService {
         a.setPublishedAt(req.getPublishedAt());
         a.setStatus("published");
         articleMapper.insert(a);
-        log.info("AI 生成文章入库 id={} title={}", a.getId(), a.getTitle());
+        log.info("AI 生成文章入库 id={} title={} fetch={}", a.getId(), a.getTitle(), fetch);
         return a.getId();
     }
 

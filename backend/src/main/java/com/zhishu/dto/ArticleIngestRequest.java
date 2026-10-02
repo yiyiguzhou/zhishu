@@ -16,6 +16,8 @@ public class ArticleIngestRequest {
     private String categoryKey;
     private Integer hotScore;
     private LocalDateTime publishedAt;
-    /** 原文正文（人工粘贴），用于 AI 总结；MVP 不做自动抓取。 */
+    /** 原文正文（人工粘贴），用于 AI 总结；fetch=true 时改用 sourceUrl 自动抓取。 */
     private String rawText;
+    /** 是否自动抓取 sourceUrl 正文（与 rawText 二选一）。 */
+    private Boolean fetch;
 }

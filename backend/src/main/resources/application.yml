@@ -65,6 +65,19 @@ zhishu:
     api-key: ${spring.ai.openai.api-key:}
     base-url: ${ARK_BASE_URL:https://ark.cn-beijing.volces.com/api/v3}
     model: ${ARK_MODEL:deepseek-v4-flash-260425}
+  # 网页正文抓取（域名白名单防 SSRF；render-enabled 控制无头浏览器，线上置 false）
+  crawler:
+    allowed-domains:
+      - ruanyifeng.com
+      - mp.weixin.qq.com
+      - sspai.com
+      - 36kr.com
+    allow-subdomains: ${CRAWLER_ALLOW_SUBDOMAINS:true}
+    render-enabled: ${CRAWLER_RENDER_ENABLED:false}
+    chrome-path: ${CRAWLER_CHROME_PATH:/Applications/Google Chrome.app/Contents/MacOS/Google Chrome}
+    timeout-ms: ${CRAWLER_TIMEOUT_MS:15000}
+    max-bytes: ${CRAWLER_MAX_BYTES:2097152}
+    max-redirects: ${CRAWLER_MAX_REDIRECTS:5}
   wx:
     # 微信小程序 code2session；线上经 WX_APP_ID/WX_SECRET 注入，为空时返回 mock openid
     app-id: ${WX_APP_ID:}
