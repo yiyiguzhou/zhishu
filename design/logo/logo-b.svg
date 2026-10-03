@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <defs>
+    <linearGradient id="b2" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#0f5fe0"/>
+      <stop offset="1" stop-color="#52a3ff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 闭合的书本（竖直） -->
+  <path d="M70 40 L170 40 Q184 40 184 54 L184 190 Q184 204 170 204 L70 204 Q56 204 56 190 L56 54 Q56 40 70 40 Z"
+        fill="#16427e" stroke="none"/>
+  <!-- 书脊高光 -->
+  <rect x="66" y="48" width="8" height="156" rx="4" fill="#ffffff22"/>
+
+  <!-- 书页纹理（横线） -->
+  <g stroke="#ffffff2e" stroke-width="2">
+    <line x1="84" y1="70" x2="176" y2="70"/>
+    <line x1="84" y1="96" x2="176" y2="96"/>
+    <line x1="84" y1="122" x2="176" y2="122"/>
+  </g>
+
+  <!-- AI 神经网络：从书页间生长 -->
+  <g stroke="url(#b2)" stroke-width="2.5" fill="none">
+    <path d="M88 148 L108 128 L128 148 L108 168 Z"/>
+    <path d="M152 148 L132 128 L112 148 L132 168 Z"/>
+    <path d="M108 128 L132 128 L120 108"/>
+  </g>
+  <g fill="url(#b2)">
+    <circle cx="108" cy="128" r="6"/>
+    <circle cx="132" cy="128" r="6"/>
+    <circle cx="120" cy="108" r="7"/>
+    <circle cx="88" cy="148" r="5"/>
+    <circle cx="128" cy="148" r="5"/>
+    <circle cx="112" cy="148" r="5"/>
+  </g>
+
+  <!-- 顶部 AI 星光 -->
+  <path d="M120 78 L123 90 L135 93 L123 96 L120 108 L117 96 L105 93 L117 90 Z" fill="#ffffff"/>
+</svg>

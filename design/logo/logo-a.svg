@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FAF6EF"/>
+      <stop offset="1" stop-color="#EFE8DA"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b8bff"/>
+      <stop offset="1" stop-color="#0f5fe0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 封面背板：纸质书轮廓 -->
+  <path d="M40 60 Q40 44 56 44 L118 44 Q120 44 120 60 L120 196 Q120 196 104 196 L54 196 Q40 196 40 184 Z"
+        fill="url(#paper)" stroke="#d8d0c0" stroke-width="1.5"/>
+  <path d="M200 60 Q200 44 184 44 L122 44 Q120 44 120 60 L120 196 Q120 196 136 196 L186 196 Q200 196 200 184 Z"
+        fill="url(#paper)" stroke="#d8d0c0" stroke-width="1.5"/>
+
+  <!-- 中缝书脊 -->
+  <line x1="120" y1="60" x2="120" y2="196" stroke="#c9bfae" stroke-width="1.5"/>
+
+  <!-- 神经网络节点（AI 元素）分布在左右书页 -->
+  <g stroke="url(#blue)" stroke-width="2" fill="none">
+    <path d="M46 98 L82 78 L98 96 L80 118 Z"/>
+    <path d="M194 98 L158 78 L142 96 L160 118 Z"/>
+    <path d="M82 78 L98 96 L120 88"/>
+    <path d="M158 78 L142 96 L120 88"/>
+  </g>
+
+  <!-- 节点圆点：向上传播的 AI 星火 -->
+  <circle cx="82" cy="76" r="5" fill="white" stroke="url(#blue)" stroke-width="3"/>
+  <circle cx="158" cy="76" r="5" fill="white" stroke="url(#blue)" stroke-width="3"/>
+  <circle cx="46" cy="98" r="6" fill="#1677ff"/>
+  <circle cx="98" cy="96" r="6" fill="#1677ff"/>
+  <circle cx="194" cy="98" r="6" fill="#1677ff"/>
+  <circle cx="142" cy="96" r="6" fill="#1677ff"/>
+  <circle cx="120" cy="88" r="5" fill="#0f5fe0"/>
+
+  <!-- 中心 AI 四芒星 -->
+  <path d="M120 70 L124 84 L138 88 L124 92 L120 106 L116 92 L102 88 L116 84 Z" fill="#1677ff"/>
+</svg>

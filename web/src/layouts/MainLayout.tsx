@@ -13,7 +13,8 @@ export default function MainLayout() {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Header style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link to="/" style={{ color: "#fff", fontSize: 18, fontWeight: 600 }}>
+        <Link to="/" style={{ color: "#fff", fontSize: 18, fontWeight: 600, display: "flex", alignItems: "center", gap: 8 }}>
+          <img src="/logo-dark.svg" alt="纸书" style={{ width: 28, height: 28 }} />
           纸书 · 大模型学习
         </Link>
         <Menu

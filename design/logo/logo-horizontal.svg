@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="180" viewBox="0 0 560 180">
+  <defs>
+    <linearGradient id="hblue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b8bff"/>
+      <stop offset="1" stop-color="#0f5fe0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 图标：翻开的纸书 + 神经网络 -->
+  <g transform="translate(10,10)">
+    <path d="M52 96 Q90 74 120 90 Q150 74 188 96 L188 170 Q150 148 120 164 Q90 148 52 170 Z"
+          fill="none" stroke="url(#hblue)" stroke-width="10" stroke-linejoin="round"/>
+    <line x1="120" y1="90" x2="120" y2="164" stroke="url(#hblue)" stroke-width="6"/>
+    <path d="M120 100 L125 116 L141 121 L125 126 L120 142 L115 126 L99 121 L115 116 Z"
+          fill="#ffffff" stroke="none"/>
+    <circle cx="120" cy="121" r="4" fill="#1677ff"/>
+  </g>
+
+  <!-- 品牌字标 -->
+  <g font-family="-apple-system,'PingFang SC','Microsoft YaHei',sans-serif">
+    <text x="180" y="112" font-size="52" font-weight="700" fill="#1a1a1a">纸书</text>
+    <text x="184" y="142" font-size="20" font-weight="500" letter-spacing="6" fill="#1677ff">ZHISHU · AI 学习</text>
+  </g>
+</svg>

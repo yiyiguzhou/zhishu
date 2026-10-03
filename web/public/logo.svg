@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <!-- 极简：一本翻开的线装书 + 中央 AI 四芒星 -->
+  <g stroke="#1677ff" stroke-width="10" stroke-linecap="round" fill="none">
+    <path d="M52 96 Q90 74 120 90 Q150 74 188 96 L188 170 Q150 148 120 164 Q90 148 52 170 Z"/>
+  </g>
+  <!-- 中缝 -->
+  <line x1="120" y1="90" x2="120" y2="164" stroke="#1677ff" stroke-width="6" stroke-linecap="round"/>
+  <!-- AI 四芒星（中心，纸白色，代表知识之光） -->
+  <path d="M120 100 L125 116 L141 121 L125 126 L120 142 L115 126 L99 121 L115 116 Z" fill="#FAF6EF" stroke="none"/>
+  <!-- 内星芯 -->
+  <circle cx="120" cy="121" r="4" fill="#1677ff"/>
+</svg>
