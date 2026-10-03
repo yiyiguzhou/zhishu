@@ -19,6 +19,20 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-10-03 · 新增作者「木子不写代码」及 60 个视频（dev）
+
+**背景**：按上次「马克的技术工作坊」流程，把 .38 的 `~/Documents/YouTube/木子不写代码/` 目录下的 60 个视频入库，接技术分类、封面与标签。范围仅 dev（MinIO + MySQL），暂不迁 OSS/线上。
+
+**变更内容**：
+
+- 新增作者「木子不写代码」（blogger id=7）+「按博主」分类 `blogger_7`（id=13）；60 个视频（video id=37~96，含 ffprobe 真实时长）
+- 对象 key 用序号：`muzi-buxie-daima/001.mp4 ~ 060.mp4`；封面 `covers/muzi-buxie-daima/`
+- 分类：AI 编程 12 / 智能体框架 22 / AI 动态 22 / RAG 1 / 提示词 2 / 基础概念 1；按分类批量打 video_tag 95 条
+- `scripts/ingest/muzi-buxie-daima.map.tsv` 新增映射；`data.sql` 同步作者/视频/标签
+- 复用 `scripts/ingest-videos.sh`，用环境变量覆盖 `BLOGGER_ID=7/CATEGORY_ID=13/VIDEO_START_ID=37`
+
+**验证**：60 mp4 + 60 封面入 MinIO；dev MySQL `blogger=7`、`video=96`、`video_tag=125`、木子名下 60 视频；H2 与 dev 后端 `/api/bloggers/7/videos` 均返回 60。
+
 ## 2026-10-02 · 文章正文自动抓取（URL → 正文 → AI 总结）
 
 **背景**：此前 AI 热点文章需人工粘贴原文正文。本次改为给 URL 自动抓取网页正文再总结。约束：域名白名单防 SSRF；本地库提取正文（省 token）；JS 渲染只在 dev 跑（线上 ECS 内存小，无头浏览器默认关）。
