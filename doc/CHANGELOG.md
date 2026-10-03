@@ -19,6 +19,21 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-10-03 · 新增作者 autoGPT + 3Blue1Brown 及 74 个视频（dev）
+
+**背景**：按既有流程，把 .38 的 `~/Documents/YouTube/autoGPT`(35) 与 `3Blue1Brown`(39) 两个作者目录入库，接分类、封面与标签。
+
+**变更内容**：
+
+- 新增作者 autoGPT（blogger 8 / 分类 blogger_8=14，video 97~131）与 3Blue1Brown（blogger 9 / 分类 blogger_9=15，video 132~170）
+- 对象 key 序号：`autogpt/001~035.mp4`、`3blue1brown/001~039.mp4`
+- 分类：autoGPT 分 harness(26，平台/Agent 教程) + ai-trends(9，论文解读)；3Blue1Brown 全 fundamentals(39，数学/深度学习原理)
+- 新增 tag「原理」(id=8)：3Blue1Brown 39 个 + autoGPT 论文解读 9 个打上；autoGPT harness 26 个打 Agent+工具调用（52 条）
+- 新增映射 `scripts/ingest/{autogpt,3blue1brown}.map.tsv`（.38 磁盘读文件名生成，避免特殊字符手抄）
+- data.sql 同步
+
+**验证**：74 mp4+74 封面入 MinIO；dev MySQL blogger=9/video=170/video_tag=228；H2 与 dev 后端 `/api/bloggers/8|9/videos` 返回 35/39。
+
 ## 2026-10-03 · 木子视频迁 OSS + 上线 ECS
 
 **背景**：木子不写代码 60 个视频此前仅在 dev MinIO，本次一并迁 OSS 走预签名播放，并同步到线上 ECS 数据。
