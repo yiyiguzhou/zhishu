@@ -19,6 +19,18 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-10-03 · autoGPT + 3Blue1Brown 视频迁 OSS + 上线 ECS
+
+**背景**：两作者 74 个视频此前仅 dev MinIO，本次迁 OSS 走预签名播放，同步到线上 ECS。
+
+**变更内容**：
+
+- 媒体迁移：74 mp4 + 74 封面 → OSS `zhishu-video-ai/{autogpt,3blue1brown}/`；dev 与 prod 两库 source_type/cover 切 oss
+- `data.sql` 两作者 cover → OSS、source_type → oss；头注释数量更新（170 视频/8 标签/208 关联）
+- prod 库变更前 dump 备份
+
+**验证**：OSS 74+74 对象；两库 blogger 8/9 且 source_type=oss；线上 `/api/bloggers/8|9/videos` 返回 35/39。
+
 ## 2026-10-03 · 新增作者 autoGPT + 3Blue1Brown 及 74 个视频（dev）
 
 **背景**：按既有流程，把 .38 的 `~/Documents/YouTube/autoGPT`(35) 与 `3Blue1Brown`(39) 两个作者目录入库，接分类、封面与标签。
