@@ -19,6 +19,18 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-10-03 · 木子视频迁 OSS + 上线 ECS
+
+**背景**：木子不写代码 60 个视频此前仅在 dev MinIO，本次一并迁 OSS 走预签名播放，并同步到线上 ECS 数据。
+
+**变更内容**：
+
+- 媒体迁移：60 mp4 + 60 封面经 ossutil 上传到 OSS `zhishu-video-ai/muzi-buxie-daima/`；dev 与 prod 两库 60 条视频 `source_type`/`cover` 切 OSS
+- `data.sql` 同步：木子 60 条 cover → OSS 地址、source_type → oss
+- prod 库变更前 dump 备份
+
+**验证**：OSS 60+60 对象；dev/prod 两库 `blogger_id=7` 且 `source_type=oss` 计 60 条；线上 `/api/bloggers/7/videos` 60、详情 playUrl 为 OSS 预签名。
+
 ## 2026-10-03 · 新增作者「木子不写代码」及 60 个视频（dev）
 
 **背景**：按上次「马克的技术工作坊」流程，把 .38 的 `~/Documents/YouTube/木子不写代码/` 目录下的 60 个视频入库，接技术分类、封面与标签。范围仅 dev（MinIO + MySQL），暂不迁 OSS/线上。
