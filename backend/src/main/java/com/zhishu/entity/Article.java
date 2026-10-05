@@ -25,5 +25,6 @@ public class Article {
     private Integer hotScore;
     private LocalDateTime publishedAt;
     private String status;
+    private Integer valid;
     private LocalDateTime createdAt;
 }

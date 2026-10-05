@@ -91,6 +91,7 @@ CREATE TABLE article (
     hot_score    INT          DEFAULT 0,
     published_at DATETIME     DEFAULT NULL COMMENT '发布时间（衰减依据，空则用 created_at）',
     status       VARCHAR(16)  NOT NULL DEFAULT 'published' COMMENT 'published | draft',
+    `valid`      TINYINT      NOT NULL DEFAULT 1 COMMENT '0 下线 | 1 上线',
     created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_article_category (category_key),

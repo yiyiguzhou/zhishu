@@ -49,6 +49,7 @@ public class ArticleService {
         int lim = Math.min(Math.max(limit, 1), 50);
         List<Article> candidates = articleMapper.selectList(new LambdaQueryWrapper<Article>()
                 .eq(Article::getStatus, "published")
+                .eq(Article::getValid, 1)
                 .eq(categoryKey != null && !categoryKey.isBlank(), Article::getCategoryKey, categoryKey)
                 .orderByDesc(Article::getHotScore)
                 .last("LIMIT " + (lim * 3)));
@@ -67,6 +68,9 @@ public class ArticleService {
         Article a = articleMapper.selectById(id);
         if (a == null) {
             throw new BusinessException(404, "文章不存在");
+        }
+        if (a.getValid() != null && a.getValid() == 0) {
+            throw new BusinessException(404, "文章已下线");
         }
         ArticleDetailDTO dto = new ArticleDetailDTO();
         dto.setId(a.getId());
