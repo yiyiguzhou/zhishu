@@ -19,6 +19,21 @@ AI 每次变更上库时必须同步更新本文件（规则见 [CLAUDE.md](../C
 
 ---
 
+## 2026-10-06 · 纸书运营后台（admin-backend + admin-web）
+
+**背景**：平台无运营管理界面，新增作者/视频/文章都靠手工 SQL/脚本。本次新建独立运营后台。
+
+**变更内容**：
+
+- 新增 `admin-backend/`（Spring Boot 8081，直连主库 zhishu，独立 JWT + BCrypt，Redis 分布式锁）
+- 新增 `admin-web/`（React 5174，独立登录，antd 侧边栏布局）
+- 数据库：`article` 加 `valid`(0 下线/1 上线)、新建 `admin_user` 表；Seeder 初始 admin/admin123
+- 功能：作者/分类/标签/视频 CRUD、文章三种创建（手动 Markdown / 贴原文 AI / 抓 URL AI，后两种调 backend ingest）、批量导入视频（ffmpeg 抽帧 + MinIO 上传 + 建行）、文章上下线（valid 切换）
+- backend 改动：`ArticleService.list/detail` 加 `valid=1` 过滤，下线文章不展示给 C 端
+- 分布式锁 `DistributedLock`（Redis SET NX + Lua 释放），写操作加锁防并发冲突
+
+**验证**：admin-backend 编译启动、登录 admin/admin123、作者/标签/分类/文章列表、新增作者、手动建文章、文章下线后 C 端不显示、恢复上线；admin-web tsc 通过。
+
 ## 2026-10-03 · 视频多标签体系扩展（粗粒度技术标签）
 
 **背景**：此前新增视频打标单一，3Blue1Brown 全打「原理」、autoGPT 笼统。本次扩展标签并给 74 个新视频重打多标签，支持视频多维度归类。

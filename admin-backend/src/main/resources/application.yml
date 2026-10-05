@@ -1,0 +1,41 @@
+# 纸书运营后台 - 后端
+spring:
+  application:
+    name: zhishu-admin
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://192.168.1.38:3306/zhishu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
+  data:
+    redis:
+      host: ${REDIS_HOST:192.168.1.38}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 3s
+
+server:
+  port: 8081
+
+# 运营后台业务配置
+zhishu:
+  admin:
+    jwt:
+      secret: ${ADMIN_JWT_SECRET:zhishu-admin-jwt-secret-please-change-in-prod-0123456789}
+      expire-hours: 168
+    # 调 backend 复用 AI 总结/自动抓取
+    backend-url: ${ADMIN_BACKEND_URL:http://127.0.0.1:8080}
+    # 批量导入媒体存储（MinIO）
+    minio:
+      endpoint: ${MINIO_ENDPOINT:http://192.168.1.38:9000}
+      access-key: ${MINIO_ACCESS_KEY:wzhang}
+      secret-key: ${MINIO_SECRET_KEY:wzhang1234}
+      bucket: ${MINIO_BUCKET:zhishu-video}
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.zhishu: ${LOG_LEVEL:info}
